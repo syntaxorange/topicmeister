@@ -3,12 +3,21 @@ import ReactDOM from "react-dom/client";
 import './style.css';
 
 class GetButton extends React.Component {
+  constructor(props) {
+    super(props);
+    this.handleClick = this.handleClick.bind(this);
+  }
+
+  handleClick() {
+    this.props.onClick(this.props.data);
+  }
+
   render() {
     return (
       <button 
         className={`button ${this.props.class ? this.props.class : ''}`}
-        onClick={this.props.onClick}
-        >
+        onClick={this.handleClick}
+      >
         {this.props.text}
         {this.props.children}
       </button>
@@ -37,9 +46,24 @@ class GetDropdown extends React.Component {
     this.setState({ isActive: !this.state.isActive });
   }
 
-  handleItemClick() {
-    this.props.onClick();
+  handleItemClick(data) {
+    this.props.onClick(data);
     this.handleClick();
+  }
+
+  renderItems() {
+    return (
+      <div className={`dropdown-content${this.state.isActive ? ' active' : ''}`}>
+        {this.props.items.map((item, index) => {
+          return <GetButton 
+                   key={index}
+                   class="button-dropdown" 
+                   text={item.name} 
+                   data={item.type} 
+                   onClick={this.handleItemClick}/>
+        })}
+      </div>
+    );
   }
 
   render() {
@@ -48,11 +72,7 @@ class GetDropdown extends React.Component {
         <GetButton class="more-vert" onClick={this.handleClick}>
           <span className="material-icons material-icons-outlined">more_vert</span>
         </GetButton>
-        <div className={`dropdown-content${this.state.isActive ? ' active' : ''}`}>
-          {this.props.items.map(item => { 
-            return <GetButton class="button-dropdown" text={item} onClick={this.handleItemClick}/>
-          })}
-        </div>
+        {this.renderItems()}
       </div>
     );
   }
@@ -112,14 +132,19 @@ class App extends React.Component {
     });
   }
 
-  handleAddTopicClick() {
-    this.setState({
-      isAddTopic: !this.state.isAddTopic,
-      currentTopic: ''
-    }, () => {
-      if (this.state.isAddTopic)
-        document.querySelector('.topic-input').focus();
-    });
+  handleAddTopicClick(type) {
+    switch(type) {
+      case 'add':
+        this.setState({
+          isAddTopic: !this.state.isAddTopic,
+          currentTopic: ''
+        }, () => {
+          if (this.state.isAddTopic)
+            document.querySelector('.topic-input').focus();
+        });
+      break;
+      default:
+    }
   }
 
   handleApplyTopicClick() {
@@ -137,15 +162,21 @@ class App extends React.Component {
   }
 
   render() {
+    const dropdownItems = [
+      { name: 'Add topic', type: 'add' }, 
+      { name: 'Change topic', type: 'change' }, 
+      { name: 'Remove topic', type: 'remove' }
+    ];
+
     return (
       <div className="topic-meister">
         <div className="top">
           <div className="title">Topic Meister</div>
           <div className="top-icons">
             <GetDropdown 
-              items={['Add topic', 'Change topic', 'Remove topic']}
+              items={dropdownItems}
               onClick={this.handleAddTopicClick}/>
-            <GetButton class="add" onClick={this.handleAddTopicClick}>
+            <GetButton class="add" onClick={() => this.handleAddTopicClick('add')}>
               <span className="material-symbols-outlined">add</span>
             </GetButton>
           </div>
