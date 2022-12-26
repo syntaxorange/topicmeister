@@ -1,82 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import GetButton from "./components/button";
+import GetDropdown from "./components/dropdown";
 import './style.css';
-
-class GetButton extends React.Component {
-  constructor(props) {
-    super(props);
-    this.handleClick = this.handleClick.bind(this);
-  }
-
-  handleClick() {
-    this.props.onClick(this.props.data);
-  }
-
-  render() {
-    return (
-      <button 
-        className={`button ${this.props.class ? this.props.class : ''}`}
-        onClick={this.handleClick}
-      >
-        {this.props.text}
-        {this.props.children}
-      </button>
-    );
-  }
-}
-
-class GetDropdown extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      isActive: false
-    };
-    this.handleClick = this.handleClick.bind(this);
-    this.handleItemClick = this.handleItemClick.bind(this);
-  }
-  
-  componentDidMount() {
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.dropdown'))
-        this.setState({ isActive: false });
-    });
-  }
-
-  handleClick() {
-    this.setState({ isActive: !this.state.isActive });
-  }
-
-  handleItemClick(data) {
-    this.props.onClick(data);
-    this.handleClick();
-  }
-
-  renderItems() {
-    return (
-      <div className={`dropdown-content${this.state.isActive ? ' active' : ''}`}>
-        {this.props.items.map((item, index) => {
-          return <GetButton 
-                   key={index}
-                   class="button-dropdown" 
-                   text={item.name} 
-                   data={item.type} 
-                   onClick={this.handleItemClick}/>
-        })}
-      </div>
-    );
-  }
-
-  render() {
-    return (
-      <div className="dropdown">
-        <GetButton class="more-vert" onClick={this.handleClick}>
-          <span className="material-icons material-icons-outlined">more_vert</span>
-        </GetButton>
-        {this.renderItems()}
-      </div>
-    );
-  }
-}
 
 class App extends React.Component {
   constructor(props) {
