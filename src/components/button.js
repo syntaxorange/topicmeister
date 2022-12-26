@@ -7,12 +7,14 @@ export default class GetButton extends React.Component {
   }
 
   handleClick() {
-    this.props.onClick(this.props.data);
+    if (this.props.onClick)
+      this.props.onClick(this.props.data);
   }
 
   render() {
     return (
       <button 
+        id={this.props.id}
         className={`button ${this.props.class ? this.props.class : ''}`}
         onClick={this.handleClick}
       >
