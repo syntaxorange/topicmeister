@@ -207,6 +207,7 @@ class App extends React.Component {
           removeTopicId: id
         });
         break;
+      default:
     }
   }
 
@@ -220,12 +221,23 @@ class App extends React.Component {
         const index = topics.findIndex(o => o.id === this.state.removeTopicId);
         topics.splice(index, 1);
         this.updateIndexes(topics);
+
+        let dropdownItems = this.state.dropdownItems;
+        let isRemoveTopics = this.state.isRemoveTopics;
+        if (topics.every(o => !o.remove)) {
+          dropdownItems = this.reverseNameDropdown(2);
+          isRemoveTopics = false;
+        }
+
         this.setState({
           isShowDialog: false, 
           removeTopicId: 0,
+          dropdownItems,
+          isRemoveTopics,
           topics
         });
         break;
+      default:
     }
   }
 
