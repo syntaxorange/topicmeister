@@ -37,13 +37,19 @@ class App extends React.Component {
 
   componentDidMount() {
     document.addEventListener('keyup', e => {
+      const target = e.target;
+      
       if (e.key === 'Enter') {
         if (this.state.newTopicName)
           this.handleApplyTopicClick();
-        if (+e.target.parentNode.id)
-          this.handleTopicIconClick('change', +e.target.parentNode.id - 1);
+        if (target.classList.contains('topic-input'))
+          this.handleTopicIconClick('change', +target.parentNode.id);
       }
     });
+  }
+
+  getTopicById(topics, id) {
+    return topics.find(o => o.id === id);
   }
 
   renderTopics() {
@@ -71,9 +77,9 @@ class App extends React.Component {
         return (
           <GetButton key={o.id} class="topic" id={o.id} data={type} text={o.change ? '' : o.name}>
             {o.change && 
-              <GetInput defaultValue={o.name} onChange={e => this.handleTopicInputChange(e, i)} />
+              <GetInput defaultValue={o.name} onChange={e => this.handleTopicInputChange(e, o.id)} />
             }
-            <span className="material-icons material-icons-outlined" onClick={() => this.handleTopicIconClick(type, i)}>{iconType}</span>
+            <span className="material-icons material-icons-outlined" onClick={() => this.handleTopicIconClick(type, o.id)}>{iconType}</span>
           </GetButton>
         )
       })
@@ -97,9 +103,9 @@ class App extends React.Component {
     });
   }
 
-  handleTopicInputChange(e, i) {
+  handleTopicInputChange(e, id) {
     const topics = structuredClone(this.state.topics);
-    topics[i].name = e.target.value
+    this.getTopicById(topics, id).name = e.target.value
 
     this.setState({
       topicsChanged: structuredClone(topics)
@@ -160,17 +166,18 @@ class App extends React.Component {
     }
   }
 
-  handleTopicIconClick(type, i) {
+  handleTopicIconClick(type, id) {
     switch (type) {
       case 'change':
-        const topicChanged = this.state.topicsChanged[i];
-        if (!topicChanged)
-          return;
         const topicsChanged = structuredClone(this.state.topicsChanged);
-        topicsChanged[i].change = false;
+        if (!topicsChanged.length)
+          return;
+        const topicChanged = this.getTopicById(topicsChanged, id);
+        topicChanged.change = false;
         const topics = structuredClone(this.state.topics);
-        topics[i].name = topicChanged.name;
-        topics[i].change = false;
+        const topic = this.getTopicById(topics, id);
+        topic.name = topicChanged.name;
+        topic.change = false;
         this.setState({topics, topicsChanged});
         break;
     }
