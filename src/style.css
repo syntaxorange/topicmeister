@@ -6,6 +6,7 @@ body {
 }
 
 .topic-meister {
+  position: relative;
   box-sizing: border-box;
   width: 340px;
   min-height: 420px;
@@ -125,4 +126,75 @@ body {
 .button-dropdown {
   font-family: 'Roboto', sans-serif;
   font-size: 13px;
+}
+
+.fs-22 {
+  font-size: 22px;
+}
+
+.dialog {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: space-between;
+  width: 254px;
+  min-height: 172px;
+  padding: 18px 15px 15px;
+  transform: translate(-50%, -65%);
+  background-color: #fafafa;
+  border-radius: 3px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.22);
+}
+
+.dialog > div {
+  width: 100%;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 22px;
+}
+
+.dialog-title {
+  font-size: 18px;
+}
+
+.dialog-close {
+  cursor: pointer;
+  color: #737373;
+}
+
+.dialog-content {
+  font-size: 14px;
+  width: 100%;
+  color: #585858;
+}
+
+.dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.dialog-buttons > button:first-child {
+  margin-right: 8px;
+}
+
+.dialog-button {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 700;
+  box-sizing: border-box;
+  border: 0;
+  padding: 10px 8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: #8b7edf;
+  background-color: transparent;
 }

@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import GetButton from "./components/button";
 import GetDropdown from "./components/dropdown";
 import GetInput from "./components/input";
+import GetDialog from "./components/dialog";
 import './style.css';
 
 class App extends React.Component {
@@ -12,14 +13,16 @@ class App extends React.Component {
       isAddTopic: false,
       isRemoveTopics: false,
       isChangeTopics: false,
+      isShowDialog: false,
+      removeTopicId: 0,
       newTopicName: '',
       topics: [
-        { id: 1, name: 'React', change: false }, 
-        { id: 2, name: 'Angular', change: false },
-        { id: 3, name: 'Vue', change: false }, 
-        { id: 4, name: 'JavaScript', change: false }, 
-        { id: 5, name: 'Css', change: false }, 
-        { id: 6, name: 'Html', change: false }
+        { id: 1, name: 'React', change: false, remove: false }, 
+        { id: 2, name: 'Angular', change: false, remove: false },
+        { id: 3, name: 'Vue', change: false, remove: false }, 
+        { id: 4, name: 'JavaScript', change: false, remove: false }, 
+        { id: 5, name: 'Css', change: false, remove: false }, 
+        { id: 6, name: 'Html', change: false, remove: false }
       ],
       dropdownItems: [
         { name: 'Add topic', tmp: 'Cancel add', type: 'add' }, 
@@ -33,6 +36,7 @@ class App extends React.Component {
     this.handleAddTopicInputChange = this.handleAddTopicInputChange.bind(this);
     this.handleTopicInputChange = this.handleTopicInputChange.bind(this);
     this.handleTopicIconClick = this.handleTopicIconClick.bind(this);
+    this.handleDialogClick = this.handleDialogClick.bind(this);
   }
 
   componentDidMount() {
@@ -42,7 +46,7 @@ class App extends React.Component {
       if (e.key === 'Enter') {
         if (this.state.newTopicName)
           this.handleApplyTopicClick();
-        if (target.classList.contains('topic-input'))
+        else if (target.classList.contains('topic-input'))
           this.handleTopicIconClick('change', +target.parentNode.id);
       }
     });
@@ -50,6 +54,10 @@ class App extends React.Component {
 
   getTopicById(topics, id) {
     return topics.find(o => o.id === id);
+  }
+
+  updateIndexes(topics) {
+    topics.forEach((o, i) => o.id = i + 1);
   }
 
   renderTopics() {
@@ -79,7 +87,7 @@ class App extends React.Component {
             {o.change && 
               <GetInput defaultValue={o.name} onChange={e => this.handleTopicInputChange(e, o.id)} />
             }
-            <span className="material-icons material-icons-outlined" onClick={() => this.handleTopicIconClick(type, o.id)}>{iconType}</span>
+            <span className={`material-icons material-icons-outlined${o.remove ? ' fs-22' : ''}`} onClick={() => this.handleTopicIconClick(type, o.id)}>{iconType}</span>
           </GetButton>
         )
       })
@@ -131,6 +139,8 @@ class App extends React.Component {
   }
 
   handleControlTopicClick(type) {
+    const topics = structuredClone(this.state.topics);
+
     switch(type) {
       case 'add':
         const dropdownItemsAdd = this.reverseNameDropdown(0);
@@ -145,9 +155,8 @@ class App extends React.Component {
         });
         break;
       case 'change':
-        const topics = structuredClone(this.state.topics);
-        topics.forEach(o => o.change = !this.state.isChangeTopics);
         const dropdownItemsChange = this.reverseNameDropdown(1);
+        topics.forEach(o => o.change = !this.state.isChangeTopics);
         
         this.setState({
           isChangeTopics: !this.state.isChangeTopics,
@@ -158,8 +167,13 @@ class App extends React.Component {
         });
         break;
       case 'remove':
+        const dropdownItemsRemove = this.reverseNameDropdown(2);
+        topics.forEach(o => o.remove = !this.state.isRemoveTopics);
+
         this.setState({
-          isRemoveTopics: !this.state.isRemoveTopics
+          isRemoveTopics: !this.state.isRemoveTopics,
+          dropdownItems: dropdownItemsRemove,
+          topics,
         });
         break;
       default:
@@ -187,6 +201,31 @@ class App extends React.Component {
 
         this.setState({ topics, topicsChanged, dropdownItems, isChangeTopics });
         break;
+      case 'remove':
+        this.setState({
+          isShowDialog: !this.state.isShowDialog,
+          removeTopicId: id
+        });
+        break;
+    }
+  }
+
+  handleDialogClick(type) {
+    switch (type) {
+      case 'decline':
+        this.setState({isShowDialog: false })
+        break;
+      case 'accept':
+        const topics = structuredClone(this.state.topics);
+        const index = topics.findIndex(o => o.id === this.state.removeTopicId);
+        topics.splice(index, 1);
+        this.updateIndexes(topics);
+        this.setState({
+          isShowDialog: false, 
+          removeTopicId: 0,
+          topics
+        });
+        break;
     }
   }
 
@@ -199,7 +238,7 @@ class App extends React.Component {
     }
 
     topics.unshift({ id: 1, name: newTopicName, change: false });
-    topics.forEach((o, i) => o.id = i + 1);
+    this.updateIndexes(topics);
 
     this.setState({
       topics,
@@ -221,6 +260,9 @@ class App extends React.Component {
             </GetButton>
           </div>
         </div>
+        {this.state.isShowDialog &&
+          <GetDialog title="Remove" content="You really want to delete the topic?" onClick={this.handleDialogClick}/>
+        }
         {this.renderAddTopic()}
         {this.renderTopics()}
       </div>
