@@ -38,7 +38,7 @@ class App extends React.Component {
   componentDidMount() {
     document.addEventListener('keyup', e => {
       const target = e.target;
-      
+
       if (e.key === 'Enter') {
         if (this.state.newTopicName)
           this.handleApplyTopicClick();
@@ -169,16 +169,23 @@ class App extends React.Component {
   handleTopicIconClick(type, id) {
     switch (type) {
       case 'change':
-        const topicsChanged = structuredClone(this.state.topicsChanged);
-        if (!topicsChanged.length)
-          return;
+        let topicsChanged = structuredClone(this.state[!this.state.topicsChanged.length ? 'topics' : 'topicsChanged']);
         const topicChanged = this.getTopicById(topicsChanged, id);
-        topicChanged.change = false;
         const topics = structuredClone(this.state.topics);
         const topic = this.getTopicById(topics, id);
+
         topic.name = topicChanged.name;
         topic.change = false;
-        this.setState({topics, topicsChanged});
+        
+        let dropdownItems = this.state.dropdownItems;
+        let isChangeTopics = this.state.isChangeTopics;
+        if (topics.every(o => !o.change)) {
+          dropdownItems = this.reverseNameDropdown(1);
+          topicsChanged = [];
+          isChangeTopics = false;
+        }
+
+        this.setState({ topics, topicsChanged, dropdownItems, isChangeTopics });
         break;
     }
   }
