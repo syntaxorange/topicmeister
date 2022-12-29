@@ -44,9 +44,9 @@ export default class GetDropdown extends React.Component {
 
   render() {
     return (
-      <div className="dropdown">
-        <GetButton class="more-vert" onClick={this.handleClick}>
-          <span className="material-icons material-icons-outlined">more_vert</span>
+      <div className={`dropdown ${this.props.class || ''}`}>
+        <GetButton onClick={this.handleClick}>
+          <span className={`material-icons md-106 ${this.props.iconClass || ''}`}>more_vert</span>
         </GetButton>
         {this.renderItems()}
       </div>

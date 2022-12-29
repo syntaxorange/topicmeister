@@ -42,11 +42,15 @@ body {
   padding: 0;
   border: 0;
   cursor: pointer;
+  background-color: transparent;
 }
 
-.more-vert {
+.button-no-pointer {
+  cursor: default;
+}
+
+.dropdown-margin {
   margin-right: 8px;
-  color: #6a6a6a;
 }
 
 .add {
@@ -106,7 +110,6 @@ body {
   box-sizing: border-box;
   display: none;
   width: 135px;
-  height: 140px;
   padding: 10px 0;
   background-color: #ffffff;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
@@ -132,10 +135,6 @@ body {
 .button-dropdown {
   font-family: 'Roboto', sans-serif;
   font-size: 13px;
-}
-
-.fs-22 {
-  font-size: 22px;
 }
 
 .dialog {
@@ -203,4 +202,98 @@ body {
   cursor: pointer;
   color: #8b7edf;
   background-color: transparent;
+}
+
+.concept {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 140px;
+  margin-bottom: 12px;
+  padding: 9px 12px;
+  border-radius: 3px;
+  background-color: #ffffff;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.25);
+}
+
+.concept-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  padding-bottom: 4px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #e2e2e2;
+}
+
+.concept-title {
+  font-size: 12px;
+  color: #4a4646;
+}
+
+.concept-content {
+  font-size: 13px;
+  overflow: hidden;
+  height: 75px;
+  color: #1c1c1c
+}
+
+.concept-footer {
+  position: relative;
+  width: 100%;
+  height: 24px;
+}
+
+.fullscreen {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.material-icons {
+  text-rendering: optimizeLegibility;
+}
+
+.md-22 {
+  font-size: 22px;
+}
+
+.md-18 {
+  font-size: 18px;
+}
+
+.md-106 {
+  color: #6a6a6a;
+}
+
+.md-148 {
+  color: #949494;
+}
+
+.md-141 {
+  color: #8d8d8d;
+}
+
+.concept-icons {
+  display: flex;
+}
+
+.concept-icons > .button {
+  margin-right: 8px;
+}
+
+.concept-icons > .button:last-child {
+  margin-right: 0;
+}
+
+.tooltip {
+  font-size: 10px;
+  position: absolute;
+  z-index: 1;  
+  top: 18px;
+  left: -4px;
+  display: none;
+  padding: 7px;
+  color: #ffffff;
+  border-radius: 2px;
+  background-color: #616161;
 }

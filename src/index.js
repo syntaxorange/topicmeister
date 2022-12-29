@@ -18,9 +18,15 @@ class App extends React.Component {
       isOpenConcepts: false,
       removeTopicId: 0,
       currentTitle: 'Topic Meister',
+      currentTopicId: 0,
       newTopicName: '',
       topics: [
-        { id: 1, name: 'React', change: false, remove: false }, 
+        { id: 1, name: 'React', change: false, remove: false,
+          concepts: [
+            { id: 1, title: 'Что такое React', content: 'React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки. React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки', views: 10 },
+            { id: 2, title: 'Компоненты', content: 'React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки. React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки', views: 15 }
+          ] 
+        }, 
         { id: 2, name: 'Angular', change: false, remove: false },
         { id: 3, name: 'Vue', change: false, remove: false }, 
         { id: 4, name: 'JavaScript', change: false, remove: false }, 
@@ -53,6 +59,8 @@ class App extends React.Component {
           this.handleTopicIconClick('change', +target.parentNode.id);
       }
     });
+
+    this.toggleOpenConcepts('React', 1);
   }
 
   getTopicById(topics, id) {
@@ -70,6 +78,7 @@ class App extends React.Component {
     return (
       <>
         <GetDropdown 
+          class="dropdown-margin"
           items={this.state.dropdownItems}
           onClick={this.handleControlTopicClick}/>
         <GetButton class="add" onClick={() => this.handleControlTopicClick('add')}>
@@ -109,9 +118,9 @@ class App extends React.Component {
             onClick={() => type === 'open' && this.handleTopicIconClick(type, o.id)}
           >
             {o.change && 
-              <GetInput defaultValue={o.name} onChange={e => this.handleTopicInputChange(e, o.id)} />
+              <GetInput class="topic-input" defaultValue={o.name} onChange={e => this.handleTopicInputChange(e, o.id)} />
             }
-            <span className={`material-icons material-icons-outlined${o.remove ? ' fs-22' : ''}`} onClick={() => this.handleTopicIconClick(type, o.id)}>{iconType}</span>
+            <span className={`material-icons ${o.remove ? ' md-22' : ''}`} onClick={() => this.handleTopicIconClick(type, o.id)}>{iconType}</span>
           </GetButton>
         )
       })
@@ -122,11 +131,21 @@ class App extends React.Component {
     if (this.state.isAddTopic) {
       return (
         <GetButton class="topic">
-          <GetInput value={this.state.newTopicName} onChange={this.handleAddTopicInputChange} />
+          <GetInput class="topic-input" value={this.state.newTopicName} onChange={this.handleAddTopicInputChange} />
           <span className="material-icons material-icons-outlined" onClick={this.handleApplyTopicClick}>add_box</span>
         </GetButton>
       );
     }
+  }
+
+  renderConcepts() {
+    if (!this.state.isOpenConcepts)
+      return;
+
+    const currentTopic = this.getTopicById(this.state.topics, this.state.currentTopicId);
+    return currentTopic.concepts.map(concept => {
+      return <Concept key={concept.id} concept={concept}/>
+    });
   }
 
   handleAddTopicInputChange(e) {
@@ -232,16 +251,17 @@ class App extends React.Component {
         });
         break;
       case 'open':
-        this.toggleOpenConcepts(this.getTopicById(this.state.topics, id).name);
+        this.toggleOpenConcepts(this.getTopicById(this.state.topics, id).name, id);
         break;
       default:
     }
   }
 
-  toggleOpenConcepts(currentTitle) {
+  toggleOpenConcepts(currentTitle, currentTopicId) {
     this.setState({
       isOpenConcepts: !this.state.isOpenConcepts,
-      currentTitle
+      currentTitle,
+      currentTopicId
     });
   }
 
@@ -298,7 +318,7 @@ class App extends React.Component {
         <div className="top">
           <div className="title">
             {this.state.isOpenConcepts && 
-              <GetButton class="button-arrow" onClick={this.toggleOpenConcepts.bind(this, 'Topic Meister')}>
+              <GetButton class="button-arrow" onClick={this.toggleOpenConcepts.bind(this, 'Topic Meister', 0)}>
                 <span className="material-icons material-icons-outlined">keyboard_arrow_left</span>
               </GetButton>
             }
@@ -310,7 +330,7 @@ class App extends React.Component {
         </div>
         {this.renderAddTopic()}
         {this.renderTopics()}
-        {this.state.isOpenConcepts && <Concept/>}
+        {this.renderConcepts()}
         {this.state.isShowDialog &&
           <GetDialog title="Remove" content="You really want to delete the topic?" onClick={this.handleDialogClick}/>
         }
