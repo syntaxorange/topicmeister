@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import Concept from "./concept";
 import GetButton from "./components/button";
 import GetDropdown from "./components/dropdown";
 import GetInput from "./components/input";
@@ -14,7 +15,9 @@ class App extends React.Component {
       isRemoveTopics: false,
       isChangeTopics: false,
       isShowDialog: false,
+      isOpenConcepts: false,
       removeTopicId: 0,
+      currentTitle: 'Topic Meister',
       newTopicName: '',
       topics: [
         { id: 1, name: 'React', change: false, remove: false }, 
@@ -60,6 +63,22 @@ class App extends React.Component {
     topics.forEach((o, i) => o.id = i + 1);
   }
 
+  renderTopicTopIcons() {
+    if (this.state.isOpenConcepts)
+      return;
+
+    return (
+      <>
+        <GetDropdown 
+          items={this.state.dropdownItems}
+          onClick={this.handleControlTopicClick}/>
+        <GetButton class="add" onClick={() => this.handleControlTopicClick('add')}>
+          <span className="material-symbols-outlined">add</span>
+        </GetButton>
+      </>
+    );
+  }
+
   renderTopics() {
     let type = '';
 
@@ -70,6 +89,9 @@ class App extends React.Component {
     } else {
       type = 'open';
     }
+
+    if (this.state.isOpenConcepts)
+      return;
     
     return (
       this.state.topics.map((o, i) => {
@@ -83,7 +105,9 @@ class App extends React.Component {
         }
 
         return (
-          <GetButton key={o.id} class="topic" id={o.id} data={type} text={o.change ? '' : o.name}>
+          <GetButton key={o.id} class="topic" id={o.id} data={type} text={o.change ? '' : o.name}
+            onClick={() => type === 'open' && this.handleTopicIconClick(type, o.id)}
+          >
             {o.change && 
               <GetInput defaultValue={o.name} onChange={e => this.handleTopicInputChange(e, o.id)} />
             }
@@ -207,8 +231,18 @@ class App extends React.Component {
           removeTopicId: id
         });
         break;
+      case 'open':
+        this.toggleOpenConcepts(this.getTopicById(this.state.topics, id).name);
+        break;
       default:
     }
+  }
+
+  toggleOpenConcepts(currentTitle) {
+    this.setState({
+      isOpenConcepts: !this.state.isOpenConcepts,
+      currentTitle
+    });
   }
 
   handleDialogClick(type) {
@@ -262,21 +296,24 @@ class App extends React.Component {
     return (
       <div className="topic-meister">
         <div className="top">
-          <div className="title">Topic Meister</div>
+          <div className="title">
+            {this.state.isOpenConcepts && 
+              <GetButton class="button-arrow" onClick={this.toggleOpenConcepts.bind(this, 'Topic Meister')}>
+                <span className="material-icons material-icons-outlined">keyboard_arrow_left</span>
+              </GetButton>
+            }
+            {this.state.currentTitle}
+          </div>
           <div className="top-icons">
-            <GetDropdown 
-              items={this.state.dropdownItems}
-              onClick={this.handleControlTopicClick}/>
-            <GetButton class="add" onClick={() => this.handleControlTopicClick('add')}>
-              <span className="material-symbols-outlined">add</span>
-            </GetButton>
+            {this.renderTopicTopIcons()}
           </div>
         </div>
+        {this.renderAddTopic()}
+        {this.renderTopics()}
+        {this.state.isOpenConcepts && <Concept/>}
         {this.state.isShowDialog &&
           <GetDialog title="Remove" content="You really want to delete the topic?" onClick={this.handleDialogClick}/>
         }
-        {this.renderAddTopic()}
-        {this.renderTopics()}
       </div>
     );
   }

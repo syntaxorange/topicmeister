@@ -26,6 +26,12 @@ body {
 
 .title {
   font-size: 18px;
+  display: flex;
+  align-items: center;
+}
+
+.button-arrow {
+  margin-right: 4px;
 }
 
 .button {
