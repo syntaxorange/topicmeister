@@ -2,9 +2,10 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import Concept from "./concept";
 import GetButton from "./components/button";
-import GetDropdown from "./components/dropdown";
 import GetInput from "./components/input";
 import GetDialog from "./components/dialog";
+import Top from "./top";
+import Title from "./title";
 import './style.css';
 
 class App extends React.Component {
@@ -21,26 +22,26 @@ class App extends React.Component {
       currentTopicId: 0,
       newTopicName: '',
       topics: [
-        { id: 1, name: 'React', change: false, remove: false,
+        {
+          id: 1, name: 'React', change: false, remove: false,
           concepts: [
             { id: 1, title: 'Что такое React', content: 'React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки. React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки', views: 10 },
             { id: 2, title: 'Компоненты', content: 'React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки. React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки', views: 15 }
-          ] 
-        }, 
+          ]
+        },
         { id: 2, name: 'Angular', change: false, remove: false },
-        { id: 3, name: 'Vue', change: false, remove: false }, 
-        { id: 4, name: 'JavaScript', change: false, remove: false }, 
-        { id: 5, name: 'Css', change: false, remove: false }, 
+        { id: 3, name: 'Vue', change: false, remove: false },
+        { id: 4, name: 'JavaScript', change: false, remove: false },
+        { id: 5, name: 'Css', change: false, remove: false },
         { id: 6, name: 'Html', change: false, remove: false }
       ],
       dropdownItems: [
-        { name: 'Add topic', tmp: 'Cancel add', type: 'add' }, 
-        { name: 'Change topic', tmp: 'Cancel change', type: 'change' }, 
+        { name: 'Add topic', tmp: 'Cancel add', type: 'add' },
+        { name: 'Change topic', tmp: 'Cancel change', type: 'change' },
         { name: 'Remove topic', tmp: 'Cancel remove', type: 'remove' }
       ],
       topicsChanged: []
     }
-    this.handleControlTopicClick = this.handleControlTopicClick.bind(this);
     this.handleApplyTopicClick = this.handleApplyTopicClick.bind(this);
     this.handleAddTopicInputChange = this.handleAddTopicInputChange.bind(this);
     this.handleTopicInputChange = this.handleTopicInputChange.bind(this);
@@ -59,8 +60,6 @@ class App extends React.Component {
           this.handleTopicIconClick('change', +target.parentNode.id);
       }
     });
-
-    this.toggleOpenConcepts('React', 1);
   }
 
   getTopicById(topics, id) {
@@ -69,23 +68,6 @@ class App extends React.Component {
 
   updateIndexes(topics) {
     topics.forEach((o, i) => o.id = i + 1);
-  }
-
-  renderTopicTopIcons() {
-    if (this.state.isOpenConcepts)
-      return;
-
-    return (
-      <>
-        <GetDropdown 
-          class="dropdown-margin"
-          items={this.state.dropdownItems}
-          onClick={this.handleControlTopicClick}/>
-        <GetButton class="add" onClick={() => this.handleControlTopicClick('add')}>
-          <span className="material-symbols-outlined">add</span>
-        </GetButton>
-      </>
-    );
   }
 
   renderTopics() {
@@ -101,7 +83,7 @@ class App extends React.Component {
 
     if (this.state.isOpenConcepts)
       return;
-    
+
     return (
       this.state.topics.map((o, i) => {
         let iconType = '';
@@ -117,7 +99,7 @@ class App extends React.Component {
           <GetButton key={o.id} class="topic" id={o.id} data={type} text={o.change ? '' : o.name}
             onClick={() => type === 'open' && this.handleTopicIconClick(type, o.id)}
           >
-            {o.change && 
+            {o.change &&
               <GetInput class="topic-input" defaultValue={o.name} onChange={e => this.handleTopicInputChange(e, o.id)} />
             }
             <span className={`material-icons ${o.remove ? ' md-22' : ''}`} onClick={() => this.handleTopicIconClick(type, o.id)}>{iconType}</span>
@@ -144,7 +126,7 @@ class App extends React.Component {
 
     const currentTopic = this.getTopicById(this.state.topics, this.state.currentTopicId);
     return currentTopic.concepts.map(concept => {
-      return <Concept key={concept.id} concept={concept}/>
+      return <Concept key={concept.id} concept={concept} />
     });
   }
 
@@ -165,7 +147,7 @@ class App extends React.Component {
 
   focusInput() {
     const topicInput = document.querySelector('.topic-input');
-          
+
     if (topicInput) {
       topicInput.setSelectionRange(0, 0);
       topicInput.focus();
@@ -174,53 +156,50 @@ class App extends React.Component {
 
   reverseNameDropdown(i) {
     const dropdownItems = structuredClone(this.state.dropdownItems);
-        
+
     dropdownItems[i].name = dropdownItems[i].tmp;
     dropdownItems[i].tmp = this.state.dropdownItems[i].name;
 
     return dropdownItems;
   }
 
-  handleControlTopicClick(type) {
+  addTopic() {
+    const dropdownItemsAdd = this.reverseNameDropdown(0);
+
+    this.setState({
+      isAddTopic: !this.state.isAddTopic,
+      newTopicName: '',
+      dropdownItems: dropdownItemsAdd
+    }, () => {
+      if (this.state.isAddTopic)
+        this.focusInput();
+    });
+  }
+
+  changeTopics() {
     const topics = structuredClone(this.state.topics);
+    const dropdownItemsChange = this.reverseNameDropdown(1);
+    topics.forEach(o => o.change = !this.state.isChangeTopics);
 
-    switch(type) {
-      case 'add':
-        const dropdownItemsAdd = this.reverseNameDropdown(0);
+    this.setState({
+      isChangeTopics: !this.state.isChangeTopics,
+      dropdownItems: dropdownItemsChange,
+      topics,
+    }, () => {
+      this.focusInput();
+    });
+  }
 
-        this.setState({
-          isAddTopic: !this.state.isAddTopic,
-          newTopicName: '',
-          dropdownItems: dropdownItemsAdd
-        }, () => {
-          if (this.state.isAddTopic)
-            this.focusInput();
-        });
-        break;
-      case 'change':
-        const dropdownItemsChange = this.reverseNameDropdown(1);
-        topics.forEach(o => o.change = !this.state.isChangeTopics);
-        
-        this.setState({
-          isChangeTopics: !this.state.isChangeTopics,
-          dropdownItems: dropdownItemsChange,
-          topics,
-        }, () => {
-          this.focusInput();
-        });
-        break;
-      case 'remove':
-        const dropdownItemsRemove = this.reverseNameDropdown(2);
-        topics.forEach(o => o.remove = !this.state.isRemoveTopics);
+  removeTopics() {
+    const topics = structuredClone(this.state.topics);
+    const dropdownItemsRemove = this.reverseNameDropdown(2);
+    topics.forEach(o => o.remove = !this.state.isRemoveTopics);
 
-        this.setState({
-          isRemoveTopics: !this.state.isRemoveTopics,
-          dropdownItems: dropdownItemsRemove,
-          topics,
-        });
-        break;
-      default:
-    }
+    this.setState({
+      isRemoveTopics: !this.state.isRemoveTopics,
+      dropdownItems: dropdownItemsRemove,
+      topics,
+    });
   }
 
   handleTopicIconClick(type, id) {
@@ -233,7 +212,7 @@ class App extends React.Component {
 
         topic.name = topicChanged.name;
         topic.change = false;
-        
+
         let dropdownItems = this.state.dropdownItems;
         let isChangeTopics = this.state.isChangeTopics;
         if (topics.every(o => !o.change)) {
@@ -268,7 +247,7 @@ class App extends React.Component {
   handleDialogClick(type) {
     switch (type) {
       case 'decline':
-        this.setState({isShowDialog: false })
+        this.setState({ isShowDialog: false })
         break;
       case 'accept':
         const topics = structuredClone(this.state.topics);
@@ -284,7 +263,7 @@ class App extends React.Component {
         }
 
         this.setState({
-          isShowDialog: false, 
+          isShowDialog: false,
           removeTopicId: 0,
           dropdownItems,
           isRemoveTopics,
@@ -316,23 +295,22 @@ class App extends React.Component {
     return (
       <div className="topic-meister">
         <div className="top">
-          <div className="title">
-            {this.state.isOpenConcepts && 
-              <GetButton class="button-arrow" onClick={this.toggleOpenConcepts.bind(this, 'Topic Meister', 0)}>
-                <span className="material-icons material-icons-outlined">keyboard_arrow_left</span>
-              </GetButton>
-            }
-            {this.state.currentTitle}
-          </div>
-          <div className="top-icons">
-            {this.renderTopicTopIcons()}
-          </div>
+          <Title 
+            isOpenConcepts={this.state.isOpenConcepts} 
+            currentTitle={this.state.currentTitle}
+            toggleOpenConcepts={this.toggleOpenConcepts.bind(this, 'Topic Meister', 0)}/>
+          <Top
+            isOpenConcepts={this.state.isOpenConcepts}
+            items={this.state.dropdownItems} 
+            onAddTopic={this.addTopic.bind(this)}
+            onChangeTopics={this.changeTopics.bind(this)}
+            onRemoveTopics={this.removeTopics.bind(this)}/>
         </div>
         {this.renderAddTopic()}
         {this.renderTopics()}
         {this.renderConcepts()}
         {this.state.isShowDialog &&
-          <GetDialog title="Remove" content="You really want to delete the topic?" onClick={this.handleDialogClick}/>
+          <GetDialog title="Remove" content="You really want to delete the topic?" onClick={this.handleDialogClick} />
         }
       </div>
     );
@@ -340,4 +318,4 @@ class App extends React.Component {
 }
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App/>);
+root.render(<App />);

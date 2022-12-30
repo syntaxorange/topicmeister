@@ -22,6 +22,15 @@ body {
 
 .top-icons {
   display: flex;
+  align-items: flex-end;
+}
+
+.top-icons > * {
+  margin-right: 8px;
+}
+
+.top-icons > *:last-child {
+  margin-right: 0;
 }
 
 .title {
@@ -49,10 +58,6 @@ body {
   cursor: default;
 }
 
-.dropdown-margin {
-  margin-right: 8px;
-}
-
 .add {
   display: flex;
   align-items: center;
@@ -67,6 +72,11 @@ body {
 
 .add > span {
   font-size: 20px;
+}
+
+.add-concept {
+  top: 2px;
+  color: #8b7edf;
 }
 
 .topic {
