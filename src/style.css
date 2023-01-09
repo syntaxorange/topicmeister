@@ -104,8 +104,29 @@ body {
   color: #585858;
 }
 
+.new-concept-content:focus,
+.new-concept-input:focus,
 .topic-input:focus {
   outline: 0;
+}
+
+.new-concept-input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  color: #1c1c1c;
+  border-bottom: 1px solid #e2e2e2;
+}
+
+.new-concept-content {
+  font-family: 'Roboto', sans-serif;
+  width: 100%;
+  min-height: 37px;
+  padding: 5px 0 0;
+  resize: vertical;
+  border: 0;
+  background: none;
 }
 
 .dropdown {
@@ -214,6 +235,7 @@ body {
   background-color: transparent;
 }
 
+.new-concept,
 .concept {
   box-sizing: border-box;
   width: 100%;
@@ -251,6 +273,19 @@ body {
   position: relative;
   width: 100%;
   height: 24px;
+}
+
+.new-concept {
+  min-height: 88px;
+}
+
+.new-concept-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.new-concept-add {
+  color: #585858;
 }
 
 .fullscreen {

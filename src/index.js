@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import Concept from "./concept";
+import NewConcept from "./newConcept";
 import GetButton from "./components/button";
 import GetInput from "./components/input";
 import GetDialog from "./components/dialog";
@@ -13,6 +14,7 @@ class App extends React.Component {
     super(props);
     this.state = {
       isAddTopic: false,
+      isAddConcept: false,
       isRemoveTopics: false,
       isChangeTopics: false,
       isShowDialog: false,
@@ -29,11 +31,11 @@ class App extends React.Component {
             { id: 2, title: 'Компоненты', content: 'React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки. React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки', views: 15 }
           ]
         },
-        { id: 2, name: 'Angular', change: false, remove: false },
-        { id: 3, name: 'Vue', change: false, remove: false },
-        { id: 4, name: 'JavaScript', change: false, remove: false },
-        { id: 5, name: 'Css', change: false, remove: false },
-        { id: 6, name: 'Html', change: false, remove: false }
+        { id: 2, name: 'Angular', change: false, remove: false, concepts: [] },
+        { id: 3, name: 'Vue', change: false, remove: false, concepts: [] },
+        { id: 4, name: 'JavaScript', change: false, remove: false, concepts: [] },
+        { id: 5, name: 'Css', change: false, remove: false, concepts: [] },
+        { id: 6, name: 'Html', change: false, remove: false, concepts: [] }
       ],
       dropdownItems: [
         { name: 'Add topic', tmp: 'Cancel add', type: 'add' },
@@ -60,6 +62,8 @@ class App extends React.Component {
           this.handleTopicIconClick('change', +target.parentNode.id);
       }
     });
+
+    // this.toggleOpenConcepts('React', 1);
   }
 
   getTopicById(topics, id) {
@@ -110,7 +114,7 @@ class App extends React.Component {
   }
 
   renderAddTopic() {
-    if (this.state.isAddTopic) {
+    if (this.state.isAddTopic && !this.state.isOpenConcepts) {
       return (
         <GetButton class="topic">
           <GetInput class="topic-input" value={this.state.newTopicName} onChange={this.handleAddTopicInputChange} />
@@ -120,12 +124,21 @@ class App extends React.Component {
     }
   }
 
+  renderAddConcept() {
+    if (this.state.isAddConcept && this.state.isOpenConcepts) {
+      return (
+        <NewConcept onAddConceptApply={this.handleAddConceptApply.bind(this)}/>
+      );
+    }
+  }
+
   renderConcepts() {
     if (!this.state.isOpenConcepts)
       return;
 
     const currentTopic = this.getTopicById(this.state.topics, this.state.currentTopicId);
-    return currentTopic.concepts.map(concept => {
+    const currentConcepts = structuredClone(currentTopic.concepts);
+    return currentConcepts.reverse().map(concept => {
       return <Concept key={concept.id} concept={concept} />
     });
   }
@@ -173,6 +186,35 @@ class App extends React.Component {
     }, () => {
       if (this.state.isAddTopic)
         this.focusInput();
+    });
+  }
+
+  addConcept() {
+    this.setState({
+      isAddConcept: !this.state.isAddConcept
+    });
+  }
+
+  handleAddConceptApply(data) {
+    const currentTopic = this.getTopicById(this.state.topics, this.state.currentTopicId);
+    const clonedTopic = structuredClone(currentTopic);
+    const currentConcepts = clonedTopic.concepts;
+    const lastConceptId = currentConcepts[currentConcepts.length - 1]?.id;
+
+    if (clonedTopic.concepts.some(o => o.title === data.title || o.content === data.content))
+      return;
+
+    clonedTopic.concepts.push({
+      id: !lastConceptId ? 1 : lastConceptId + 1,
+      title: data.title,
+      content: data.content,
+      views: 0
+    });
+    const topics = structuredClone(this.state.topics);
+    this.getTopicById(topics, this.state.currentTopicId).concepts = currentConcepts;
+
+    this.setState({
+      topics
     });
   }
 
@@ -304,10 +346,12 @@ class App extends React.Component {
             items={this.state.dropdownItems} 
             onAddTopic={this.addTopic.bind(this)}
             onChangeTopics={this.changeTopics.bind(this)}
-            onRemoveTopics={this.removeTopics.bind(this)}/>
+            onRemoveTopics={this.removeTopics.bind(this)}
+            onAddConcept={this.addConcept.bind(this)}/>
         </div>
         {this.renderAddTopic()}
         {this.renderTopics()}
+        {this.renderAddConcept()}
         {this.renderConcepts()}
         {this.state.isShowDialog &&
           <GetDialog title="Remove" content="You really want to delete the topic?" onClick={this.handleDialogClick} />

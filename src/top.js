@@ -19,6 +19,9 @@ export default class Top extends React.Component {
       case 'remove':
         this.props.onRemoveTopics();
         break;
+      case 'add-concept':
+        this.props.onAddConcept();
+        break;
       default:
     }
   }
@@ -52,7 +55,7 @@ export default class Top extends React.Component {
         <GetButton>
           <span className="material-icons md-18 md-106">filter_list</span>
         </GetButton>
-        <GetButton class="add-concept">
+        <GetButton class="add-concept" onClick={() => this.handleControlTopicClick('add-concept')}>
           <span className="material-icons md-18">add_comment</span>
         </GetButton>
       </>
