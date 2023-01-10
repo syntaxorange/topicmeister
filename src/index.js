@@ -20,15 +20,18 @@ class App extends React.Component {
       isShowDialog: false,
       isOpenConcepts: false,
       removeTopicId: 0,
+      removeConceptId: 0,
       currentTitle: 'Topic Meister',
       currentTopicId: 0,
       newTopicName: '',
+      isFilterDesc: true,
       topics: [
         {
           id: 1, name: 'React', change: false, remove: false,
           concepts: [
             { id: 1, title: 'Что такое React', content: 'React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки. React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки', views: 10 },
-            { id: 2, title: 'Компоненты', content: 'React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки. React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки', views: 15 }
+            { id: 2, title: 'Компоненты', content: 'React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки. React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки', views: 15 },
+            { id: 3, title: 'Рендер-пропсы', content: 'Термин «рендер-проп» относится к возможности компонентов React разделять код между собой с помощью пропа, значение которого является функцией.', views: 17 }
           ]
         },
         { id: 2, name: 'Angular', change: false, remove: false, concepts: [] },
@@ -70,8 +73,8 @@ class App extends React.Component {
     return topics.find(o => o.id === id);
   }
 
-  updateIndexes(topics) {
-    topics.forEach((o, i) => o.id = i + 1);
+  updateIndexes(arrayObjects) {
+    arrayObjects.forEach((o, i) => o.id = i + 1);
   }
 
   renderTopics() {
@@ -137,9 +140,36 @@ class App extends React.Component {
       return;
 
     const currentTopic = this.getTopicById(this.state.topics, this.state.currentTopicId);
-    return currentTopic.concepts.reverse().map(concept => {
-      return <Concept key={concept.id} concept={concept} />
+    const clonedTopic = structuredClone(currentTopic);
+    return currentTopic.concepts.map(concept => {
+      return <Concept 
+              key={concept.id}
+              id={concept.id}
+              concept={concept} 
+              onChangeConcept={this.changeConcept.bind(this, concept.id, clonedTopic)}
+              onRemoveConcept={() => this.setState({removeConceptId: concept.id, isShowDialog: !this.state.isShowDialog})} />
     });
+  }
+
+  renderDialog() {
+    if (!this.state.isShowDialog)
+      return;
+
+    if (!this.state.isOpenConcepts) {
+      return (
+        <GetDialog 
+          title="Remove topic" 
+          content="You really want to delete the topic?" 
+          onClick={this.handleDialogClick} />
+      );
+    } else {
+      return (
+        <GetDialog 
+          title="Remove concept" 
+          content="You really want to delete the concept?" 
+          onClick={this.handleDialogClick} />
+      );
+    }
   }
 
   handleAddTopicInputChange(e) {
@@ -197,12 +227,12 @@ class App extends React.Component {
   filterConcepts() {
     const topics = structuredClone(this.state.topics);
     const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
-    const currentConcepts = structuredClone(currentTopic.concepts);
-    currentConcepts.reverse();
-
+    currentTopic.concepts.reverse();
+    
     this.setState({
-      topics
-    })
+      topics,
+      isFilterDesc: !this.state.isFilterDesc
+    });
   }
 
   handleAddConceptApply(data) {
@@ -254,6 +284,50 @@ class App extends React.Component {
     });
   }
 
+  removeTopic() {
+    const topics = structuredClone(this.state.topics);
+    const index = topics.findIndex(o => o.id === this.state.removeTopicId);
+    topics.splice(index, 1);
+    this.updateIndexes(topics);
+
+    let dropdownItems = this.state.dropdownItems;
+    let isRemoveTopics = this.state.isRemoveTopics;
+    if (topics.every(o => !o.remove)) {
+      dropdownItems = this.reverseNameDropdown(2);
+      isRemoveTopics = false;
+    }
+
+    this.setState({
+      isShowDialog: false,
+      removeTopicId: 0,
+      dropdownItems,
+      isRemoveTopics,
+      topics
+    });
+  }
+
+  changeConcept(id) {
+  }
+  
+  removeConcept() {
+    const topics = structuredClone(this.state.topics);
+    const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
+    const index = currentTopic.concepts.findIndex(o => o.id === this.state.removeConceptId);
+    currentTopic.concepts.splice(index, 1);
+
+    if (this.state.isFilterDesc)
+      currentTopic.concepts.reverse();
+    this.updateIndexes(currentTopic.concepts);
+    if (this.state.isFilterDesc)
+      currentTopic.concepts.reverse();
+
+    this.setState({
+      isShowDialog: false,
+      removeConceptId: 0,
+      topics
+    });
+  }
+
   handleTopicIconClick(type, id) {
     switch (type) {
       case 'change':
@@ -289,6 +363,8 @@ class App extends React.Component {
   }
 
   toggleOpenConcepts(currentTitle, currentTopicId) {
+    const currentTopic = this.getTopicById(this.state.topics, currentTopicId);
+    currentTopic.concepts.reverse();
     this.setState({
       isOpenConcepts: !this.state.isOpenConcepts,
       currentTitle,
@@ -302,25 +378,10 @@ class App extends React.Component {
         this.setState({ isShowDialog: false })
         break;
       case 'accept':
-        const topics = structuredClone(this.state.topics);
-        const index = topics.findIndex(o => o.id === this.state.removeTopicId);
-        topics.splice(index, 1);
-        this.updateIndexes(topics);
-
-        let dropdownItems = this.state.dropdownItems;
-        let isRemoveTopics = this.state.isRemoveTopics;
-        if (topics.every(o => !o.remove)) {
-          dropdownItems = this.reverseNameDropdown(2);
-          isRemoveTopics = false;
-        }
-
-        this.setState({
-          isShowDialog: false,
-          removeTopicId: 0,
-          dropdownItems,
-          isRemoveTopics,
-          topics
-        });
+        if (this.state.removeTopicId > 0)
+          this.removeTopic();
+        if (this.state.removeConceptId > 0)
+          this.removeConcept();
         break;
       default:
     }
@@ -350,9 +411,10 @@ class App extends React.Component {
           <Title 
             isOpenConcepts={this.state.isOpenConcepts} 
             currentTitle={this.state.currentTitle}
-            toggleOpenConcepts={this.toggleOpenConcepts.bind(this, 'Topic Meister', 0)}/>
+            toggleOpenConcepts={this.toggleOpenConcepts.bind(this, 'Topic Meister', this.state.currentTopicId)}/>
           <Top
             isOpenConcepts={this.state.isOpenConcepts}
+            isFilterDesc={this.state.isFilterDesc}
             items={this.state.dropdownItems} 
             onAddTopic={this.addTopic.bind(this)}
             onChangeTopics={this.changeTopics.bind(this)}
@@ -364,9 +426,7 @@ class App extends React.Component {
         {this.renderTopics()}
         {this.renderAddConcept()}
         {this.renderConcepts()}
-        {this.state.isShowDialog &&
-          <GetDialog title="Remove" content="You really want to delete the topic?" onClick={this.handleDialogClick} />
-        }
+        {this.renderDialog()}
       </div>
     );
   }

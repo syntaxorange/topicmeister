@@ -56,7 +56,7 @@ export default class Top extends React.Component {
           <span className="material-icons md-18 md-106">stop</span>
         </GetButton>
         <GetButton onClick={() => this.handleControlTopicClick('filter-concepts')}>
-          <span className="material-icons md-18 md-106">filter_list</span>
+          <span className="material-icons md-18 md-106" style={{color: !this.props.isFilterDesc ? '#111111' : ''}}>filter_list</span>
         </GetButton>
         <GetButton class="add-concept" onClick={() => this.handleControlTopicClick('add-concept')}>
           <span className="material-icons md-18">add_comment</span>

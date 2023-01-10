@@ -12,6 +12,19 @@ export default class Concept extends React.Component {
         { name: 'Remove concept', tmp: 'Cancel remove', type: 'remove' }
       ]
     }
+    this.handleControlConceptClick = this.handleControlConceptClick.bind(this);
+  }
+
+  handleControlConceptClick(type) {
+    switch(type) {
+      case 'change':
+        this.props.onChangeConcept();
+        break;
+      case 'remove':
+        this.props.onRemoveConcept();
+        break;
+      default:
+    }
   }
 
   renderConcept() {
@@ -26,7 +39,7 @@ export default class Concept extends React.Component {
             <GetButton class="button-no-pointer" tooltip={this.props.concept.views}>
               <span className="material-icons md-18 md-148">remove_red_eye</span>
             </GetButton>
-            <GetDropdown items={this.state.dropdownItems} iconClass="md-18" onClick={() => {}}/>
+            <GetDropdown items={this.state.dropdownItems} iconClass="md-18" onClick={this.handleControlConceptClick}/>
           </div>
         </div>
         <div className="concept-content" style={{height: this.state.isShowFull ? '100%' : ''}}>
