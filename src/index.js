@@ -63,7 +63,7 @@ class App extends React.Component {
       }
     });
 
-    // this.toggleOpenConcepts('React', 1);
+    this.toggleOpenConcepts('React', 1);
   }
 
   getTopicById(topics, id) {
@@ -137,8 +137,7 @@ class App extends React.Component {
       return;
 
     const currentTopic = this.getTopicById(this.state.topics, this.state.currentTopicId);
-    const currentConcepts = structuredClone(currentTopic.concepts);
-    return currentConcepts.reverse().map(concept => {
+    return currentTopic.concepts.reverse().map(concept => {
       return <Concept key={concept.id} concept={concept} />
     });
   }
@@ -195,17 +194,28 @@ class App extends React.Component {
     });
   }
 
+  filterConcepts() {
+    const topics = structuredClone(this.state.topics);
+    const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
+    const currentConcepts = structuredClone(currentTopic.concepts);
+    currentConcepts.reverse();
+
+    this.setState({
+      topics
+    })
+  }
+
   handleAddConceptApply(data) {
     const currentTopic = this.getTopicById(this.state.topics, this.state.currentTopicId);
     const clonedTopic = structuredClone(currentTopic);
     const currentConcepts = clonedTopic.concepts;
-    const lastConceptId = currentConcepts[currentConcepts.length - 1]?.id;
+    const maxConceptId = Math.max.apply(this, currentConcepts.map(o => o.id));
 
     if (clonedTopic.concepts.some(o => o.title === data.title || o.content === data.content))
       return;
 
     clonedTopic.concepts.push({
-      id: !lastConceptId ? 1 : lastConceptId + 1,
+      id: !maxConceptId ? 1 : maxConceptId + 1,
       title: data.title,
       content: data.content,
       views: 0
@@ -347,7 +357,8 @@ class App extends React.Component {
             onAddTopic={this.addTopic.bind(this)}
             onChangeTopics={this.changeTopics.bind(this)}
             onRemoveTopics={this.removeTopics.bind(this)}
-            onAddConcept={this.addConcept.bind(this)}/>
+            onAddConcept={this.addConcept.bind(this)}
+            onFilterConcepts={this.filterConcepts.bind(this)}/>
         </div>
         {this.renderAddTopic()}
         {this.renderTopics()}
