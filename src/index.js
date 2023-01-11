@@ -140,13 +140,12 @@ class App extends React.Component {
       return;
 
     const currentTopic = this.getTopicById(this.state.topics, this.state.currentTopicId);
-    const clonedTopic = structuredClone(currentTopic);
     return currentTopic.concepts.map(concept => {
       return <Concept 
               key={concept.id}
               id={concept.id}
               concept={concept} 
-              onChangeConcept={this.changeConcept.bind(this, concept.id, clonedTopic)}
+              onChangeConceptApply={data => this.changeConcept(data)}
               onRemoveConcept={() => this.setState({removeConceptId: concept.id, isShowDialog: !this.state.isShowDialog})} />
     });
   }
@@ -309,7 +308,15 @@ class App extends React.Component {
     });
   }
 
-  changeConcept(id) {
+  changeConcept(changedConcept) {
+    const topics = structuredClone(this.state.topics);
+    const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
+    const index = currentTopic.concepts.findIndex(o => o.id === changedConcept.id);
+    currentTopic.concepts[index] = changedConcept;
+
+    this.setState({
+      topics
+    });
   }
   
   removeConcept() {
