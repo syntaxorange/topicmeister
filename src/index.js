@@ -187,8 +187,8 @@ class App extends React.Component {
     });
   }
 
-  focusInput() {
-    const topicInput = document.querySelector('.topic-input');
+  focusInput(selector) {
+    const topicInput = document.querySelector(selector);
 
     if (topicInput) {
       topicInput.setSelectionRange(0, 0);
@@ -214,13 +214,16 @@ class App extends React.Component {
       dropdownItems: dropdownItemsAdd
     }, () => {
       if (this.state.isAddTopic)
-        this.focusInput();
+        this.focusInput('.topic-input');
     });
   }
 
   addConcept() {
     this.setState({
       isAddConcept: !this.state.isAddConcept
+    }, () => {
+      if (this.state.isAddConcept)
+        this.focusInput('.new-concept-input');
     });
   }
 
@@ -244,7 +247,7 @@ class App extends React.Component {
     if (clonedTopic.concepts.some(o => o.title === data.title || o.content === data.content))
       return;
 
-    clonedTopic.concepts.push({
+    clonedTopic.concepts.unshift({
       id: !maxConceptId ? 1 : maxConceptId + 1,
       title: data.title,
       content: data.content,
@@ -268,7 +271,7 @@ class App extends React.Component {
       dropdownItems: dropdownItemsChange,
       topics,
     }, () => {
-      this.focusInput();
+      this.focusInput('.topic-input');
     });
   }
 
