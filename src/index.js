@@ -179,7 +179,7 @@ class App extends React.Component {
 
   handleTopicInputChange(e, id) {
     const topics = structuredClone(this.state.topics);
-    this.getTopicById(topics, id).name = e.target.value
+    this.getTopicById(topics, id).name = e.target.value.trim()
 
     this.setState({
       topicsChanged: structuredClone(topics)
@@ -405,7 +405,7 @@ class App extends React.Component {
       return;
     }
 
-    topics.unshift({ id: 1, name: newTopicName, change: false });
+    topics.unshift({ id: 1, name: newTopicName.trim(), change: false });
     this.updateIndexes(topics);
 
     this.setState({

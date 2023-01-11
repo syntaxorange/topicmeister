@@ -25,13 +25,13 @@ export default class Concept extends React.Component {
 
   handleTitleChange(e) {
     this.setState({
-      title: e.target.value
+      title: e.target.value.trim()
     });
   }
 
   handleContentChange(e) {
     this.setState({
-      content: e.target.value
+      content: e.target.value.trim()
     });
   }
 
