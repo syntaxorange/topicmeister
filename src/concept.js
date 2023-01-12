@@ -106,7 +106,7 @@ export default class Concept extends React.Component {
           </div>
         }
         {this.state.isChangeConcept &&
-          <GetTextarea class="new-concept-content"  onChange={this.handleContentChange}/>
+          <GetTextarea class="new-concept-content" onChange={this.handleContentChange}/>
         }
         <div className="concept-footer">
           {!this.state.isChangeConcept &&

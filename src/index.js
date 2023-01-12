@@ -7,6 +7,7 @@ import GetInput from "./components/input";
 import GetDialog from "./components/dialog";
 import Top from "./top";
 import Title from "./title";
+import storage from "./storage";
 import './style.css';
 
 class App extends React.Component {
@@ -29,9 +30,9 @@ class App extends React.Component {
         {
           id: 1, name: 'React', change: false, remove: false,
           concepts: [
-            { id: 1, title: 'Что такое React', content: 'React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки. React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки', views: 10 },
-            { id: 2, title: 'Компоненты', content: 'React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки. React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки', views: 15 },
-            { id: 3, title: 'Рендер-пропсы', content: 'Термин «рендер-проп» относится к возможности компонентов React разделять код между собой с помощью пропа, значение которого является функцией.', views: 17 }
+            { id: 1, title: 'Что такое React', play: true, playing: false, content: 'React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки. React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки', views: 0 },
+            { id: 2, title: 'Компоненты', play: true, playing: false, content: 'React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки. React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки', views: 0 },
+            { id: 3, title: 'Рендер-пропсы', play: true, playing: false, content: 'Термин «рендер-проп» относится к возможности компонентов React разделять код между собой с помощью пропа, значение которого является функцией.', views: 0 }
           ]
         },
         { id: 2, name: 'Angular', change: false, remove: false, concepts: [] },
@@ -47,6 +48,7 @@ class App extends React.Component {
       ],
       topicsChanged: []
     }
+    this.storageKey = 'topic_meister_topics';
     this.handleApplyTopicClick = this.handleApplyTopicClick.bind(this);
     this.handleAddTopicInputChange = this.handleAddTopicInputChange.bind(this);
     this.handleTopicInputChange = this.handleTopicInputChange.bind(this);
@@ -66,7 +68,14 @@ class App extends React.Component {
       }
     });
 
-    this.toggleOpenConcepts('React', 1);
+    storage.get(this.storageKey).then(result => {
+      if (!result[this.storageKey])
+        return;
+      this.setState({
+        topics: result[this.storageKey]
+      });
+    });
+    // this.toggleOpenConcepts('React', 1);
   }
 
   getTopicById(topics, id) {
@@ -241,7 +250,7 @@ class App extends React.Component {
     const currentTopic = this.getTopicById(this.state.topics, this.state.currentTopicId);
     const clonedTopic = structuredClone(currentTopic);
     const currentConcepts = clonedTopic.concepts;
-    const maxConceptId = Math.max.apply(this, currentConcepts.map(o => o.id));
+    const maxConceptId = currentConcepts.length && Math.max.apply(this, currentConcepts.map(o => o.id));
 
     if (clonedTopic.concepts.some(o => o.title === data.title || o.content === data.content))
       return;
@@ -250,6 +259,8 @@ class App extends React.Component {
       id: !maxConceptId ? 1 : maxConceptId + 1,
       title: data.title,
       content: data.content,
+      play: true,
+      playing: false,
       views: 0
     });
     const topics = structuredClone(this.state.topics);
@@ -258,6 +269,7 @@ class App extends React.Component {
     this.setState({
       topics
     });
+    storage.set(this.storageKey, topics);
   }
 
   changeTopics() {
@@ -306,6 +318,7 @@ class App extends React.Component {
       isRemoveTopics,
       topics
     });
+    storage.set(this.storageKey, topics);
   }
 
   changeConcept(changedConcept) {
@@ -317,6 +330,7 @@ class App extends React.Component {
     this.setState({
       topics
     });
+    storage.set(this.storageKey, topics);
   }
   
   removeConcept() {
@@ -336,6 +350,7 @@ class App extends React.Component {
       removeConceptId: 0,
       topics
     });
+    storage.set(this.storageKey, topics);
   }
 
   handleTopicIconClick(type, id) {
@@ -358,6 +373,7 @@ class App extends React.Component {
         }
 
         this.setState({ topics, topicsChanged, dropdownItems, isChangeTopics });
+        storage.set(this.storageKey, topics);
         break;
       case 'remove':
         this.setState({
@@ -405,13 +421,14 @@ class App extends React.Component {
       return;
     }
 
-    topics.unshift({ id: 1, name: newTopicName.trim(), change: false });
+    topics.unshift({ id: 1, name: newTopicName.trim(), change: false, remove: false, concepts: [] });
     this.updateIndexes(topics);
 
     this.setState({
       topics,
       newTopicName: ''
     });
+    storage.set(this.storageKey, topics);
   }
 
   render() {
