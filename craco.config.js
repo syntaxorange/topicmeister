@@ -3,6 +3,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
   webpack: {
     configure: (webpackConfig, { env, paths }) => {
+      // TODO: remove
+      webpackConfig.optimization.minimize = false;
       const htmlWebpackPluginInstance = webpackConfig.plugins.find(
         (webpackPlugin) => webpackPlugin instanceof HtmlWebpackPlugin
       );

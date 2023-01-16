@@ -62,6 +62,9 @@ export default class Concept extends React.Component {
         });
         this.props.onRemoveConcept();
         break;
+      case 'play':
+        this.props.onClickConceptPlay(this.props.concept.id);
+        break;
       default:
     }
   }
@@ -91,8 +94,8 @@ export default class Concept extends React.Component {
             <GetInput class="new-concept-input" onChange={this.handleTitleChange}/>
           }
           <div className="concept-icons">
-            <GetButton>
-              <span className="material-icons md-18 md-106">play_circle_outline</span>
+            <GetButton data="play" onClick={this.handleControlConceptClick}>
+              <span className="material-icons md-18 md-106">{this.props.concept.play ? 'stop' : 'play_circle_outline'}</span>
             </GetButton>
             <GetButton class="button-no-pointer" tooltip={this.props.concept.views}>
               <span className="material-icons md-18 md-148">remove_red_eye</span>

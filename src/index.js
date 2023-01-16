@@ -26,21 +26,7 @@ class App extends React.Component {
       currentTopicId: 0,
       newTopicName: '',
       isFilterDesc: true,
-      topics: [
-        {
-          id: 1, name: 'React', change: false, remove: false,
-          concepts: [
-            { id: 1, title: 'Что такое React', play: true, playing: false, content: 'React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки. React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки', views: 0 },
-            { id: 2, title: 'Компоненты', play: true, playing: false, content: 'React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки. React — JavaScript-библиотека с открытым исходным кодом для разработки пользовательских интерфейсов. Его цель — предоставить высокую скорость разработки', views: 0 },
-            { id: 3, title: 'Рендер-пропсы', play: true, playing: false, content: 'Термин «рендер-проп» относится к возможности компонентов React разделять код между собой с помощью пропа, значение которого является функцией.', views: 0 }
-          ]
-        },
-        { id: 2, name: 'Angular', change: false, remove: false, concepts: [] },
-        { id: 3, name: 'Vue', change: false, remove: false, concepts: [] },
-        { id: 4, name: 'JavaScript', change: false, remove: false, concepts: [] },
-        { id: 5, name: 'Css', change: false, remove: false, concepts: [] },
-        { id: 6, name: 'Html', change: false, remove: false, concepts: [] }
-      ],
+      topics: [],
       dropdownItems: [
         { name: 'Add topic', tmp: 'Cancel add', type: 'add' },
         { name: 'Change topic', tmp: 'Cancel change', type: 'change' },
@@ -54,6 +40,7 @@ class App extends React.Component {
     this.handleTopicInputChange = this.handleTopicInputChange.bind(this);
     this.handleTopicIconClick = this.handleTopicIconClick.bind(this);
     this.handleDialogClick = this.handleDialogClick.bind(this);
+    this.handleClickConceptPlay = this.handleClickConceptPlay.bind(this);
   }
 
   componentDidMount() {
@@ -155,6 +142,7 @@ class App extends React.Component {
               id={concept.id}
               concept={concept} 
               onChangeConceptApply={data => this.changeConcept(data)}
+              onClickConceptPlay={this.handleClickConceptPlay}
               onRemoveConcept={() => this.setState({removeConceptId: concept.id, isShowDialog: !this.state.isShowDialog})} />
     });
   }
@@ -178,6 +166,42 @@ class App extends React.Component {
           onClick={this.handleDialogClick} />
       );
     }
+  }
+
+  handleClickConceptPlay(id) {
+    const topics = structuredClone(this.state.topics);
+    const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
+    const currentConcept = currentTopic.concepts.find(o => o.id === id);
+    currentConcept.play = !currentConcept.play;
+
+    this.setState({
+      topics
+    });
+    storage.set(this.storageKey, topics);
+
+    /* eslint-disable */
+    chrome.tabs && chrome.tabs.query({
+      active: true,
+      currentWindow: true
+    }, tabs => {
+      const currentTabId = tabs[0].id;
+
+      chrome.tabs.sendMessage(
+        currentTabId,
+        {
+          id: currentConcept.id,
+          play: currentConcept.play
+        },
+        () => {
+          currentConcept.views += 1;
+          currentConcept.playing = true;
+          this.setState({
+            topics
+          });
+        }
+      );
+    });
+    /* eslint-enable */
   }
 
   handleAddTopicInputChange(e) {
@@ -259,7 +283,7 @@ class App extends React.Component {
       id: !maxConceptId ? 1 : maxConceptId + 1,
       title: data.title,
       content: data.content,
-      play: true,
+      play: false,
       playing: false,
       views: 0
     });
