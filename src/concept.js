@@ -91,7 +91,7 @@ export default class Concept extends React.Component {
             <div className="concept-title">{this.props.concept.title}</div>
           }
           {this.state.isChangeConcept &&
-            <GetInput class="new-concept-input" onChange={this.handleTitleChange}/>
+            <GetInput class="new-concept-input" onChange={this.handleTitleChange} defaultValue={this.props.concept.title}/>
           }
           <div className="concept-icons">
             <GetButton data="play" onClick={this.handleControlConceptClick}>
@@ -109,7 +109,7 @@ export default class Concept extends React.Component {
           </div>
         }
         {this.state.isChangeConcept &&
-          <GetTextarea class="new-concept-content" onChange={this.handleContentChange}/>
+          <GetTextarea class="new-concept-content" onChange={this.handleContentChange} defaultValue={this.props.concept.content}/>
         }
         <div className="concept-footer">
           {!this.state.isChangeConcept &&

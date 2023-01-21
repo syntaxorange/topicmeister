@@ -295,11 +295,19 @@ const init = () => {
   
   runTimer();
   
-  chrome.runtime.onMessage.addListener(({ id, play, topics }, sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener(({ id, play, topics, change }, sender, sendResponse) => {
     const allConcepts = getConcepts({ 'topic_meister_topics' : topics }, true);
     const hasPlaying = allConcepts.some(o => o.playing);
     const currentConcept = allConcepts.find(o => o.id === id);
     
+    if (change) {
+      playConcept({ 'topic_meister_topics' : topics }, currentConcept);
+      clearTimeout(timerId);
+      runTimer();
+
+      return;
+    }
+
     if (play && !hasPlaying) {
       playConcept({ 'topic_meister_topics' : topics }, currentConcept);
       sendResponse(true);

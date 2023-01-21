@@ -169,7 +169,7 @@ class App extends React.Component {
     }
   }
 
-  playConcept(id, play, currentConcept, topics) {
+  playConcept(id, play, currentConcept, topics, change) {
     /* eslint-disable */
     chrome.tabs && chrome.tabs.query({
       active: true,
@@ -182,7 +182,8 @@ class App extends React.Component {
         { 
           id, 
           play,
-          topics
+          topics,
+          change
         },
         (playing) => {
           if (playing === undefined)
@@ -385,6 +386,7 @@ class App extends React.Component {
       topics
     });
     storage.set(this.storageKey, topics);
+    this.playConcept(changedConcept.id, changedConcept.play, changedConcept, topics, true);
   }
   
   removeConcept() {
