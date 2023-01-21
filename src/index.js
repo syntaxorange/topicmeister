@@ -169,7 +169,7 @@ class App extends React.Component {
     }
   }
 
-  playConcept(id, play, currentConcept, topics, change) {
+  playConcept(id, play, currentConcept, topics, change, remove) {
     /* eslint-disable */
     chrome.tabs && chrome.tabs.query({
       active: true,
@@ -183,10 +183,11 @@ class App extends React.Component {
           id, 
           play,
           topics,
-          change
+          change,
+          remove
         },
         (playing) => {
-          if (playing === undefined)
+          if (playing === undefined || !currentConcept)
             return;
           if (playing)
             currentConcept.views += 1;
@@ -407,6 +408,7 @@ class App extends React.Component {
       topics
     });
     storage.set(this.storageKey, topics);
+    this.playConcept(this.state.removeConceptId, false, false, topics, false, true);
   }
 
   handleTopicIconClick(type, id) {

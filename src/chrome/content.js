@@ -252,8 +252,10 @@ const playConcept = (topics, concept) => {
 }
 
 const stopConcept = (topics, concept) => {
-  concept.playing = false;
-  storage.set(storageKey, topics[storageKey]);
+  if (concept) {
+    concept.playing = false;
+    storage.set(storageKey, topics[storageKey]);
+  }
   document.getElementById('topic_meister_topic').remove();
 }
 
@@ -295,9 +297,8 @@ const init = () => {
   
   runTimer();
   
-  chrome.runtime.onMessage.addListener(({ id, play, topics, change }, sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener(({ id, play, topics, change, remove }, sender, sendResponse) => {
     const allConcepts = getConcepts({ 'topic_meister_topics' : topics }, true);
-    const hasPlaying = allConcepts.some(o => o.playing);
     const currentConcept = allConcepts.find(o => o.id === id);
     
     if (change) {
@@ -308,19 +309,19 @@ const init = () => {
       return;
     }
 
-    if (play && !hasPlaying) {
+    if (play && !allConcepts.some(o => o.playing)) {
       playConcept({ 'topic_meister_topics' : topics }, currentConcept);
       sendResponse(true);
       clearTimeout(timerId);
       runTimer();
     }
 
-    if (!play && currentConcept.playing) {
+    if (!play && (remove || currentConcept.playing)) {
       stopConcept({ 'topic_meister_topics' : topics }, currentConcept);
       sendResponse(false);
       console.table(allConcepts);
 
-      if (hasPlaying) {
+      if (allConcepts.some(o => o.play)) {
         playConcept({ 'topic_meister_topics' : topics }, allConcepts.find(o => o.play));
         clearTimeout(timerId);
         runTimer();
