@@ -4,7 +4,7 @@ import storage from "../storage";
 const storageKey = 'topic_meister_topics';
 const storageKeyCoor = 'topic_meister_topic_coor';
 const storageKeyToogle = 'topic_meister_topic_toggle';
-const playTimeout = 1 * 60 * 1000;
+const playTimeout = 10 * 60 * 1000;
 let toggle = false;
 let timerId = 0;
 let index = 0;
@@ -252,8 +252,6 @@ const playConcept = (topics, concept) => {
 }
 
 const stopConcept = (topics, concept) => {
-  if (!concept.playing)
-    return;
   concept.playing = false;
   storage.set(storageKey, topics[storageKey]);
   document.getElementById('topic_meister_topic').remove();
@@ -297,20 +295,31 @@ const init = () => {
   
   runTimer();
   
-  chrome.runtime.onMessage.addListener(({ id, play }, sender, sendResponse) => {
-    console.log('%c⧭', 'color: #514080', sendResponse);
-    storage.get(storageKey).then(topics => {
-      const concepts = getConcepts(topics, true);
-  
-      if (play && concepts.length === 1) {
-        playConcept(topics, concepts[0]);
+  chrome.runtime.onMessage.addListener(({ id, play, topics }, sender, sendResponse) => {
+    const allConcepts = getConcepts({ 'topic_meister_topics' : topics }, true);
+    const hasPlaying = allConcepts.some(o => o.playing);
+    const currentConcept = allConcepts.find(o => o.id === id);
+    
+    if (play && !hasPlaying) {
+      playConcept({ 'topic_meister_topics' : topics }, currentConcept);
+      sendResponse(true);
+      clearTimeout(timerId);
+      runTimer();
+    }
+
+    if (!play && currentConcept.playing) {
+      stopConcept({ 'topic_meister_topics' : topics }, currentConcept);
+      sendResponse(false);
+      console.table(allConcepts);
+
+      if (hasPlaying) {
+        playConcept({ 'topic_meister_topics' : topics }, allConcepts.find(o => o.play));
         clearTimeout(timerId);
-        sendResponse();
         runTimer();
       }
-      if (!play)
-        stopConcept(topics, concepts.find(o => o.id === id));
-    });
+    }
+
+    // sendResponse
   });
 }
 

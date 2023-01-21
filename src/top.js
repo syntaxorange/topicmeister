@@ -25,6 +25,9 @@ export default class Top extends React.Component {
       case 'filter-concepts':
         this.props.onFilterConcepts();
         break;
+      case 'play':
+        this.props.onClickConceptsPlay();
+        break;
       default:
     }
   }
@@ -52,8 +55,8 @@ export default class Top extends React.Component {
 
     return (
       <>
-        <GetButton>
-          <span className="material-icons md-18 md-106">stop</span>
+        <GetButton onClick={() => this.handleControlTopicClick('play')}>
+          <span className="material-icons md-18 md-106">{this.props.isPlayAllConcepts ? 'stop' : 'play_circle_outline'}</span>
         </GetButton>
         <GetButton onClick={() => this.handleControlTopicClick('filter-concepts')}>
           <span className="material-icons md-18 md-106" style={{color: !this.props.isFilterDesc ? '#111111' : ''}}>filter_list</span>

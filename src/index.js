@@ -20,6 +20,7 @@ class App extends React.Component {
       isChangeTopics: false,
       isShowDialog: false,
       isOpenConcepts: false,
+      isPlayAllConcepts: false,
       removeTopicId: 0,
       removeConceptId: 0,
       currentTitle: 'Topic Meister',
@@ -168,17 +169,7 @@ class App extends React.Component {
     }
   }
 
-  handleClickConceptPlay(id) {
-    const topics = structuredClone(this.state.topics);
-    const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
-    const currentConcept = currentTopic.concepts.find(o => o.id === id);
-    currentConcept.play = !currentConcept.play;
-
-    this.setState({
-      topics
-    });
-    storage.set(this.storageKey, topics);
-
+  playConcept(id, play, currentConcept, topics) {
     /* eslint-disable */
     chrome.tabs && chrome.tabs.query({
       active: true,
@@ -188,13 +179,17 @@ class App extends React.Component {
 
       chrome.tabs.sendMessage(
         currentTabId,
-        {
-          id: currentConcept.id,
-          play: currentConcept.play
+        { 
+          id, 
+          play,
+          topics
         },
-        () => {
-          currentConcept.views += 1;
-          currentConcept.playing = true;
+        (playing) => {
+          if (playing === undefined)
+            return;
+          if (playing)
+            currentConcept.views += 1;
+          currentConcept.playing = playing;
           this.setState({
             topics
           });
@@ -202,6 +197,41 @@ class App extends React.Component {
       );
     });
     /* eslint-enable */
+  }
+
+  handleClickConceptPlay(id) {
+    const topics = structuredClone(this.state.topics);
+    const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
+    const currentConcept = currentTopic.concepts.find(o => o.id === id);
+    currentConcept.play = !currentConcept.play;
+
+    this.setState({
+      topics,
+      isPlayAllConcepts: currentTopic.concepts.every(o => o.play)
+    });
+    storage.set(this.storageKey, topics);
+    this.playConcept(currentConcept.id, currentConcept.play, currentConcept, topics);
+  }
+
+  handleClickConceptsPlay() {
+    storage.get(this.storageKey).then(result => {
+      const topics = result[this.storageKey] ? result[this.storageKey] : this.state.topics;
+      const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
+      const currentConcepts = currentTopic.concepts;
+
+      if (currentConcepts.length) {
+        currentConcepts.forEach(o => {
+          o.play = !this.state.isPlayAllConcepts
+        });
+      }
+
+      this.setState({
+        isPlayAllConcepts: !this.state.isPlayAllConcepts,
+        topics
+      });
+      storage.set(this.storageKey, topics);
+      this.playConcept(currentConcepts[0].id, currentConcepts[0].play, currentConcepts[0], topics);
+    });
   }
 
   handleAddTopicInputChange(e) {
@@ -419,6 +449,14 @@ class App extends React.Component {
       isOpenConcepts: !this.state.isOpenConcepts,
       currentTitle,
       currentTopicId
+    }, () => {
+      storage.get(this.storageKey).then(result => {
+        const currentTopic = this.getTopicById(result[this.storageKey], this.state.currentTopicId);
+        const currentConcepts = currentTopic.concepts;
+        this.setState({
+          isPlayAllConcepts: currentConcepts.length ? currentConcepts.every(o => o.play) : this.state.isPlayAllConcepts
+        });
+      });
     });
   }
 
@@ -466,12 +504,14 @@ class App extends React.Component {
           <Top
             isOpenConcepts={this.state.isOpenConcepts}
             isFilterDesc={this.state.isFilterDesc}
+            isPlayAllConcepts={this.state.isPlayAllConcepts}
             items={this.state.dropdownItems} 
             onAddTopic={this.addTopic.bind(this)}
             onChangeTopics={this.changeTopics.bind(this)}
             onRemoveTopics={this.removeTopics.bind(this)}
             onAddConcept={this.addConcept.bind(this)}
-            onFilterConcepts={this.filterConcepts.bind(this)}/>
+            onFilterConcepts={this.filterConcepts.bind(this)}
+            onClickConceptsPlay={this.handleClickConceptsPlay.bind(this)}/>
         </div>
         {this.renderAddTopic()}
         {this.renderTopics()}
