@@ -169,7 +169,7 @@ class App extends React.Component {
     }
   }
 
-  playConcept(id, play, currentConcept, topics, change, remove) {
+  playConcept({ id, play, currentConcept, topics, change, remove }) {
     /* eslint-disable */
     chrome.tabs && chrome.tabs.query({
       active: true,
@@ -186,12 +186,17 @@ class App extends React.Component {
           change,
           remove
         },
-        (playing) => {
-          if (playing === undefined || !currentConcept)
+        ({ playing, someConceptPlayId }) => {
+          if (playing === undefined || remove)
             return;
           if (playing)
             currentConcept.views += 1;
           currentConcept.playing = playing;
+          if (someConceptPlayId) {
+            const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
+            currentTopic.concepts.find(o => o.id == someConceptPlayId).playing = true;
+          }
+          console.table(topics[0].concepts);
           this.setState({
             topics
           });
@@ -211,29 +216,32 @@ class App extends React.Component {
       topics,
       isPlayAllConcepts: currentTopic.concepts.every(o => o.play)
     });
-    storage.set(this.storageKey, topics);
-    this.playConcept(currentConcept.id, currentConcept.play, currentConcept, topics);
+
+    this.playConcept({ id, play: currentConcept.play, currentConcept, topics });
   }
 
   handleClickConceptsPlay() {
-    storage.get(this.storageKey).then(result => {
-      const topics = result[this.storageKey] ? result[this.storageKey] : this.state.topics;
-      const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
-      const currentConcepts = currentTopic.concepts;
+    const topics = this.state.topics;
+    const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
+    const currentConcepts = currentTopic.concepts;
 
-      if (currentConcepts.length) {
-        currentConcepts.forEach(o => {
-          o.play = !this.state.isPlayAllConcepts
-        });
-      }
-
-      this.setState({
-        isPlayAllConcepts: !this.state.isPlayAllConcepts,
-        topics
-      });
-      storage.set(this.storageKey, topics);
-      this.playConcept(currentConcepts[0].id, currentConcepts[0].play, currentConcepts[0], topics);
+    if (!currentConcepts.length)
+      return;
+      
+    currentConcepts.forEach(o => {
+      o.play = !this.state.isPlayAllConcepts
     });
+
+    this.setState({
+      isPlayAllConcepts: !this.state.isPlayAllConcepts,
+      topics
+    });
+    
+    const playingConcept = currentConcepts.find(o => o.playing);
+    const currentConcept = playingConcept ? playingConcept : currentConcepts[0];
+    const { id, play } = currentConcept;
+
+    this.playConcept({ id, play, currentConcept, topics });
   }
 
   handleAddTopicInputChange(e) {
@@ -386,8 +394,8 @@ class App extends React.Component {
     this.setState({
       topics
     });
-    storage.set(this.storageKey, topics);
-    this.playConcept(changedConcept.id, changedConcept.play, changedConcept, topics, true);
+
+    this.playConcept({ topics, change: true });
   }
   
   removeConcept() {
@@ -407,8 +415,8 @@ class App extends React.Component {
       removeConceptId: 0,
       topics
     });
-    storage.set(this.storageKey, topics);
-    this.playConcept(this.state.removeConceptId, false, false, topics, false, true);
+
+    this.playConcept({ id: this.state.removeConceptId, topics, remove: true });
   }
 
   handleTopicIconClick(type, id) {

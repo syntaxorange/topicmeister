@@ -311,20 +311,26 @@ const init = () => {
 
     if (play && !allConcepts.some(o => o.playing)) {
       playConcept({ 'topic_meister_topics' : topics }, currentConcept);
-      sendResponse(true);
+      sendResponse({ playing: true });
       clearTimeout(timerId);
       runTimer();
     }
 
     if (!play && (remove || currentConcept.playing)) {
       stopConcept({ 'topic_meister_topics' : topics }, currentConcept);
-      sendResponse(false);
-      console.table(allConcepts);
-
-      if (allConcepts.some(o => o.play)) {
-        playConcept({ 'topic_meister_topics' : topics }, allConcepts.find(o => o.play));
+      const isSomeConceptPlay = allConcepts.some(o => o.play);
+      
+      if (isSomeConceptPlay) {
+        const nextConceptPlay = allConcepts.find(o => o.id > id);
+        const prevConceptPlay = allConcepts.find(o => o.id < id);
+        const someConceptPlay = nextConceptPlay ? nextConceptPlay : prevConceptPlay;
+        
+        playConcept({ 'topic_meister_topics' : topics }, someConceptPlay);
+        sendResponse({ playing: false, someConceptPlayId: someConceptPlay.id });
         clearTimeout(timerId);
         runTimer();
+      } else {
+        sendResponse({ playing: false });
       }
     }
 
