@@ -297,9 +297,9 @@ const init = () => {
   
   runTimer();
   
-  chrome.runtime.onMessage.addListener(({ id, play, topics, change, remove }, sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener(({ id, play, topicId, topics, change, remove }, sender, sendResponse) => {
     const allConcepts = getConcepts({ 'topic_meister_topics' : topics }, true);
-    const currentConcept = allConcepts.find(o => o.id === id);
+    const currentConcept = allConcepts.find(o => o.topicId === topicId && o.id === id);
     
     if (change) {
       playConcept({ 'topic_meister_topics' : topics }, currentConcept);
@@ -309,11 +309,16 @@ const init = () => {
       return;
     }
 
-    if (play && !allConcepts.some(o => o.playing)) {
-      playConcept({ 'topic_meister_topics' : topics }, currentConcept);
-      sendResponse({ playing: true });
-      clearTimeout(timerId);
-      runTimer();
+    if (play) {
+      if (!allConcepts.some(o => o.playing)) {
+        playConcept({ 'topic_meister_topics' : topics }, currentConcept);
+        sendResponse({ playing: true });
+        clearTimeout(timerId);
+        runTimer();
+      } else {
+        storage.set(storageKey, topics);
+        sendResponse();
+      }
     }
 
     if (!play && (remove || currentConcept.playing)) {
@@ -321,20 +326,16 @@ const init = () => {
       const isSomeConceptPlay = allConcepts.some(o => o.play);
       
       if (isSomeConceptPlay) {
-        const nextConceptPlay = allConcepts.find(o => o.id > id);
-        const prevConceptPlay = allConcepts.find(o => o.id < id);
-        const someConceptPlay = nextConceptPlay ? nextConceptPlay : prevConceptPlay;
-        
+        const someConceptPlay = allConcepts.find(o => o.play);
+
         playConcept({ 'topic_meister_topics' : topics }, someConceptPlay);
-        sendResponse({ playing: false, someConceptPlayId: someConceptPlay.id });
+        sendResponse({ playing: false, someId: someConceptPlay.id, someTopicId: someConceptPlay.topicId });
         clearTimeout(timerId);
         runTimer();
       } else {
         sendResponse({ playing: false });
       }
     }
-
-    // sendResponse
   });
 }
 

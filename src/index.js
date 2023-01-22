@@ -70,8 +70,13 @@ class App extends React.Component {
     return topics.find(o => o.id === id);
   }
 
-  updateIndexes(arrayObjects) {
-    arrayObjects.forEach((o, i) => o.id = i + 1);
+  updateIndexes(arrayObjects, updateTopicId = true) {
+    arrayObjects.forEach((o, i) => {
+      o.id = i + 1;
+
+      if (updateTopicId)
+        o.concepts.forEach(o1 => o1.topicId = o.id);
+    });
   }
 
   renderTopics() {
@@ -169,7 +174,7 @@ class App extends React.Component {
     }
   }
 
-  playConcept({ id, play, currentConcept, topics, change, remove }) {
+  playConcept({ id, play, topicId, currentConcept, topics, change, remove }) {
     /* eslint-disable */
     chrome.tabs && chrome.tabs.query({
       active: true,
@@ -182,19 +187,23 @@ class App extends React.Component {
         { 
           id, 
           play,
+          topicId,
           topics,
           change,
           remove
         },
-        ({ playing, someConceptPlayId }) => {
+        data => {
+          if (!data)
+            return
+          const { playing, someId, someTopicId } = data;
           if (playing === undefined || remove)
             return;
           if (playing)
             currentConcept.views += 1;
           currentConcept.playing = playing;
-          if (someConceptPlayId) {
-            const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
-            currentTopic.concepts.find(o => o.id == someConceptPlayId).playing = true;
+          if (someId) {
+            const currentTopic = this.getTopicById(topics, someTopicId);
+            currentTopic.concepts.find(o => o.id == someId).playing = true;
           }
           console.table(topics[0].concepts);
           this.setState({
@@ -217,7 +226,9 @@ class App extends React.Component {
       isPlayAllConcepts: currentTopic.concepts.every(o => o.play)
     });
 
-    this.playConcept({ id, play: currentConcept.play, currentConcept, topics });
+    const { play, topicId } = currentConcept;
+
+    this.playConcept({ id, play, topicId, currentConcept, topics });
   }
 
   handleClickConceptsPlay() {
@@ -239,9 +250,9 @@ class App extends React.Component {
     
     const playingConcept = currentConcepts.find(o => o.playing);
     const currentConcept = playingConcept ? playingConcept : currentConcepts[0];
-    const { id, play } = currentConcept;
+    const { id, play, topicId } = currentConcept;
 
-    this.playConcept({ id, play, currentConcept, topics });
+    this.playConcept({ id, play, topicId, currentConcept, topics });
   }
 
   handleAddTopicInputChange(e) {
@@ -323,6 +334,7 @@ class App extends React.Component {
       id: !maxConceptId ? 1 : maxConceptId + 1,
       title: data.title,
       content: data.content,
+      topicId: this.state.currentTopicId,
       play: false,
       playing: false,
       views: 0
@@ -395,7 +407,9 @@ class App extends React.Component {
       topics
     });
 
-    this.playConcept({ topics, change: true });
+    const { id, topicId } = changedConcept;
+
+    this.playConcept({ id, topicId, topics, change: true });
   }
   
   removeConcept() {
@@ -406,7 +420,7 @@ class App extends React.Component {
 
     if (this.state.isFilterDesc)
       currentTopic.concepts.reverse();
-    this.updateIndexes(currentTopic.concepts);
+    this.updateIndexes(currentTopic.concepts, false);
     if (this.state.isFilterDesc)
       currentTopic.concepts.reverse();
 
