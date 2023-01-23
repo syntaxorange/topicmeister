@@ -377,6 +377,8 @@ class App extends React.Component {
   removeTopic() {
     const topics = structuredClone(this.state.topics);
     const index = topics.findIndex(o => o.id === this.state.removeTopicId);
+    const playing = topics[index].concepts.find(o => o.playing);
+
     topics.splice(index, 1);
     this.updateIndexes(topics);
 
@@ -394,7 +396,14 @@ class App extends React.Component {
       isRemoveTopics,
       topics
     });
-    storage.set(this.storageKey, topics);
+
+    if (playing) {
+      const { id, topicId } = playing;
+      
+      this.playConcept({ id, topicId, topics, remove: true });
+    } else {
+      storage.set(this.storageKey, topics);
+    }
   }
 
   changeConcept(changedConcept) {

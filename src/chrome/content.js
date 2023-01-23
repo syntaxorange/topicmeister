@@ -254,8 +254,8 @@ const playConcept = (topics, concept) => {
 const stopConcept = (topics, concept) => {
   if (concept) {
     concept.playing = false;
-    storage.set(storageKey, topics[storageKey]);
   }
+  storage.set(storageKey, topics[storageKey]);
   document.getElementById('topic_meister_topic').remove();
 }
 
@@ -322,7 +322,7 @@ const init = () => {
     }
 
     if (!play && (remove || currentConcept.playing)) {
-      stopConcept({ 'topic_meister_topics' : topics }, currentConcept);
+      stopConcept({ 'topic_meister_topics' : topics }, !remove && currentConcept);
       const isSomeConceptPlay = allConcepts.some(o => o.play);
       
       if (isSomeConceptPlay) {
