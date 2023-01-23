@@ -59,8 +59,18 @@ class App extends React.Component {
     storage.get(this.storageKey).then(result => {
       if (!result[this.storageKey])
         return;
+      const topics = result[this.storageKey];
+
+      if (topics.some(o => o.remove)) {
+        topics.forEach(o => o.remove = false);
+      }
+      
+      if (topics.some(o => o.change)) {
+        topics.forEach(o => o.change = false);
+      }
+
       this.setState({
-        topics: result[this.storageKey]
+        topics
       });
     });
     // this.toggleOpenConcepts('React', 1);
