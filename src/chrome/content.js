@@ -122,10 +122,10 @@ const toggleTopic = ({ topic, topicContainer, topicToggle, topicSwitch }) => {
   topic.style.right = toggle ? '-480px' : '10px';
   topic.style.left = '';
   if (toggle) {
-    storage.set(storageKeyCoor, { x: '-60px', y: '-500px'  });
     clearTimeout(timerId);
   } else {
-    storage.set(storageKeyCoor, { x: 0, y: 0  });
+    storage.remove(storageKeyToogle);
+    putOnChangedPlace(topic);
     runTimer();
   }
 }
@@ -238,9 +238,9 @@ const addTopic = ({title, content}) => {
   topicControls.appendChild(topicToggle);
   topicControls.appendChild(topicSwitch);
   topic.appendChild(topicControls);
+  putOnChangedPlace(topic);
   body.appendChild(topic);
   bindTopicEvents({topic, topicControls, topicContainer, topicToggle, topicSwitch});
-  putOnChangedPlace(topic);
 }
 
 const playConcept = (topics, concept) => {
