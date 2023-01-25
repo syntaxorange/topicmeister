@@ -10,7 +10,7 @@ export default class Title extends React.Component {
             <span className="material-icons">keyboard_arrow_left</span>
           </GetButton>
         }
-        {this.props.currentTitle}
+        <span>{this.props.currentTitle}</span>
       </div>
     );
   }
