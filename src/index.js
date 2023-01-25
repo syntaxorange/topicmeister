@@ -215,7 +215,6 @@ class App extends React.Component {
             const currentTopic = this.getTopicById(topics, someTopicId);
             currentTopic.concepts.find(o => o.id == someId).playing = true;
           }
-          console.table(topics[0].concepts);
           this.setState({
             topics
           });

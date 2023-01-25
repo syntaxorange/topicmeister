@@ -22,7 +22,7 @@ const removeTopic = () => {
     existingTopic.remove();
 }
 
-const switchConcept = topics => {
+const switchConcept = (topics, isUpdateCounter = true) => {
   if (!Object.keys(topics).length) {
     clearTimeout(timerId);
     return;
@@ -43,7 +43,7 @@ const switchConcept = topics => {
   }
   
   addTopic({title: concepts[index].title, content: concepts[index].content});
-  playConcept(topics, concepts[index]);
+  playConcept(topics, concepts[index], isUpdateCounter);
 }
 
 const runTimer = () => {
@@ -159,7 +159,7 @@ const bindTopicEvents = ({ topic, topicControls, topicContainer, topicToggle, to
   topicSwitch.addEventListener('click', () => {
     clearTimeout(timerId);
     storage.get(storageKey).then(topics => {
-      switchConcept(topics);
+      switchConcept(topics, false);
       runTimer();
     });
   });
@@ -243,11 +243,13 @@ const addTopic = ({title, content}) => {
   bindTopicEvents({topic, topicControls, topicContainer, topicToggle, topicSwitch});
 }
 
-const playConcept = (topics, concept) => {
-  concept.views += 1;
-  concept.playing = true;
-  console.table(concept);
-  storage.set(storageKey, topics[storageKey]);
+const playConcept = (topics, concept, isUpdateCounter = true, isStorage = true) => {
+  if (isUpdateCounter) {
+    concept.views += 1;
+    concept.playing = true;
+  }
+  if (isStorage)
+    storage.set(storageKey, topics[storageKey]);
   addTopic({title: concept.title, content: concept.content});
 }
 
@@ -278,7 +280,7 @@ const init = () => {
     if (!concepts.length)
       return;
     const index = getPlayingConceptIndex(concepts);
-    playConcept(topics, concepts[index]);
+    playConcept(topics, concepts[index], false, false);
     const topic = document.getElementById('topic_meister_topic');
 
     storage.get(storageKeyToogle).then(result => {
@@ -302,7 +304,7 @@ const init = () => {
     const currentConcept = allConcepts.find(o => o.topicId === topicId && o.id === id);
     
     if (change) {
-      playConcept({ 'topic_meister_topics' : topics }, currentConcept);
+      playConcept({ 'topic_meister_topics' : topics }, currentConcept, false, true);
       clearTimeout(timerId);
       runTimer();
 
