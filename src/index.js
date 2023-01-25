@@ -488,8 +488,6 @@ class App extends React.Component {
   }
 
   toggleOpenConcepts(currentTitle, currentTopicId) {
-    const currentTopic = this.getTopicById(this.state.topics, currentTopicId);
-    currentTopic.concepts.reverse();
     this.setState({
       isOpenConcepts: !this.state.isOpenConcepts,
       currentTitle,
