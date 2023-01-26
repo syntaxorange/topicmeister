@@ -304,9 +304,13 @@ const init = () => {
     const currentConcept = allConcepts.find(o => o.topicId === topicId && o.id === id);
     
     if (change) {
-      playConcept({ 'topic_meister_topics' : topics }, currentConcept, false, true);
-      clearTimeout(timerId);
-      runTimer();
+      if (currentConcept.playing) {
+        playConcept({ 'topic_meister_topics' : topics }, currentConcept, false, true);
+        clearTimeout(timerId);
+        runTimer();
+      } else {
+        storage.set(storageKey, topics);
+      }
 
       return;
     }
