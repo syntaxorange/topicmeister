@@ -123,7 +123,7 @@ body {
 .new-concept-content {
   font-family: 'Roboto', sans-serif;
   width: 100%;
-  min-height: 37px;
+  min-height: 60px;
   padding: 5px 0 0;
   resize: vertical;
   border: 0;
@@ -271,13 +271,16 @@ body {
   font-size: 13px;
   overflow: hidden;
   height: 75px;
+  margin-bottom: 5px;
   color: #1c1c1c
 }
 
 .concept-footer {
-  position: relative;
   width: 100%;
-  height: 24px;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .new-concept {
@@ -286,18 +289,50 @@ body {
 
 .new-concept-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  min-height: 24px;
 }
 
 .new-concept-add {
   color: #585858;
 }
 
-.concept-apply,
-.fullscreen {
-  position: absolute;
-  top: 0;
-  right: 0;
+.labels {
+  display: flex;
+  align-items: center;
+  flex-flow: wrap;
+}
+
+.label {
+  font-family: 'Roboto', sans-serif;
+  font-size: 11px;
+  margin: 1px;
+  padding: 3px;
+  color: #ffffff;
+  border-radius: 3px;
+  background-color: #8b7edf;
+}
+
+.label:last-child {
+  margin-right: 0;
+}
+
+.label-add {
+  margin-right: 3px;
+}
+
+.label-text {
+  margin-right: 5px;
+}
+
+.label-input {
+  font-family: 'Roboto', sans-serif;
+  font-size: 11px;
+  width: 30px;
+  margin-right: 2px;
+  padding: 0;
+  outline: 0;
+  border: 0;
 }
 
 .material-icons {
@@ -310,6 +345,10 @@ body {
 
 .md-18 {
   font-size: 18px;
+}
+
+.md-16 {
+  font-size: 16px;
 }
 
 .md-106 {

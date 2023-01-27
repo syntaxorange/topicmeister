@@ -73,7 +73,6 @@ class App extends React.Component {
         topics
       });
     });
-    // this.toggleOpenConcepts('React', 1);
   }
 
   getTopicById(topics, id) {
@@ -343,6 +342,7 @@ class App extends React.Component {
       id: !maxConceptId ? 1 : maxConceptId + 1,
       title: data.title,
       content: data.content,
+      labels: data.labels,
       topicId: this.state.currentTopicId,
       play: false,
       playing: false,
