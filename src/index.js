@@ -28,6 +28,7 @@ class App extends React.Component {
       newTopicName: '',
       isFilterDesc: true,
       topics: [],
+      conceptsTmp: [],
       dropdownItems: [
         { name: 'Add topic', tmp: 'Cancel add', type: 'add' },
         { name: 'Change topic', tmp: 'Cancel change', type: 'change' },
@@ -156,6 +157,7 @@ class App extends React.Component {
               key={concept.id}
               id={concept.id}
               concept={concept} 
+              onToggleLabelActive={data => this.changeConcept(data, false, true)}
               onChangeConceptApply={data => this.changeConcept(data)}
               onClickConceptPlay={this.handleClickConceptPlay}
               onRemoveConcept={() => this.setState({removeConceptId: concept.id, isShowDialog: !this.state.isShowDialog})} />
@@ -329,6 +331,60 @@ class App extends React.Component {
     });
   }
 
+  filterConceptsByLabels() {
+    const topics = structuredClone(this.state.topics);
+    const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
+    let concepts = null;
+
+    if (this.state.conceptsTmp.length) {
+      const conceptsTmp = structuredClone(this.state.conceptsTmp);
+
+      conceptsTmp.forEach(o => {
+        const foundConcept = currentTopic.concepts.find(o1 => o1.id === o.id);
+        if (!foundConcept)
+          return;
+        o.labels.forEach(o1 => {
+          const foundLabel = foundConcept.labels.find(o2 => o2.id === o1.id);
+          o1.active = foundLabel.active;
+        })
+      });
+
+      concepts = conceptsTmp;
+    } else {
+      concepts = currentTopic.concepts;
+    }
+
+    const activeLabels = concepts
+      .map(o => o.labels.map(o1 => o1.active && o1.label))
+      .flat().filter(v => typeof v === 'string')
+      .filter((v, i, a) => a.indexOf(v) === i);
+
+    if (activeLabels.length === 1) {
+      this.setState({
+        conceptsTmp: structuredClone(concepts)
+      });
+    }
+
+    if (activeLabels.length) {
+      const filteredConcepts = concepts.filter(o => o.labels.some(o1 => activeLabels.indexOf(o1.label) >= 0));
+      currentTopic.concepts = filteredConcepts;
+
+      this.setState({
+        topics
+      });
+    } else {
+      const concepts = structuredClone(this.state.conceptsTmp);
+      
+      concepts.forEach(o => o.labels.forEach(o1 => o1.active = false));
+      currentTopic.concepts = concepts;
+        
+      this.setState({
+        topics,
+        conceptsTmp: []
+      });
+    }
+  }
+
   handleAddConceptApply(data) {
     const currentTopic = this.getTopicById(this.state.topics, this.state.currentTopicId);
     const clonedTopic = structuredClone(currentTopic);
@@ -415,7 +471,7 @@ class App extends React.Component {
     }
   }
 
-  changeConcept(changedConcept) {
+  changeConcept(changedConcept, play = true, filterByLabels) {
     const topics = structuredClone(this.state.topics);
     const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
     const index = currentTopic.concepts.findIndex(o => o.id === changedConcept.id);
@@ -423,7 +479,13 @@ class App extends React.Component {
 
     this.setState({
       topics
+    }, () => {
+      if (filterByLabels)
+        this.filterConceptsByLabels();
     });
+
+    if (!play)
+      return;
 
     const { id, topicId } = changedConcept;
 

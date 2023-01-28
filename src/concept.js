@@ -24,6 +24,7 @@ export default class Concept extends React.Component {
     this.handleContentChange = this.handleContentChange.bind(this);
     this.handleControlConceptClick = this.handleControlConceptClick.bind(this);
     this.handleChangeLabels = this.handleChangeLabels.bind(this);
+    this.handleToggleLabelActive = this.handleToggleLabelActive.bind(this);
   }
 
   handleTitleChange(e) {
@@ -93,6 +94,17 @@ export default class Concept extends React.Component {
     });
   }
 
+  handleToggleLabelActive(labels) {
+    this.setState({
+      labels
+    }, () => {
+      const clonedConcept = structuredClone(this.props.concept);
+      
+      clonedConcept.labels = structuredClone(this.state.labels);
+      this.props.onToggleLabelActive(clonedConcept);
+    });
+  }
+
   renderConcept() {
     return (
       <div key={this.props.concept.id} className="concept">
@@ -124,7 +136,7 @@ export default class Concept extends React.Component {
         <div className="concept-footer">
           {!this.state.isChangeConcept &&
             <>
-              <GetLabel labels={this.props.concept.labels} isShowDynamically={false} />
+              <GetLabel onToggleLabelActive={this.handleToggleLabelActive} labels={this.props.concept.labels} isShowDynamically={false} />
               <GetButton class="fullscreen" onClick={() => this.setState({isShowFull: !this.state.isShowFull})}>
                 <span className="material-icons md-141">{this.state.isShowFull ? 'fullscreen_exit' : 'fullscreen'}</span>
               </GetButton>

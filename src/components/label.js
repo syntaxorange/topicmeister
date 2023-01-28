@@ -34,7 +34,8 @@ export default class GetLabel extends React.Component {
     labels.push({
       id: labels.length + 1,
       label: 'label',
-      change: false
+      change: false,
+      active: false
     });
 
     this.setState({
@@ -81,7 +82,7 @@ export default class GetLabel extends React.Component {
       return;
     }
 
-    const {labels, index } = this.getLabelIndex(id);
+    const { labels, index } = this.getLabelIndex(id);
 
     labels[index].label = e.target.value.trim().substr(0, 15);
     this.setState({
@@ -91,6 +92,20 @@ export default class GetLabel extends React.Component {
 
       labels.forEach(o => o.change = false);
       this.props.onChangeLabel(labels);
+    });
+  }
+
+  toggleLabelActive(id) {
+    const { labels, index } = this.getLabelIndex(id);
+    const labelObject = labels[index];
+    
+    labelObject.active = !labelObject.active;
+
+    this.setState({
+      labels,
+    }, () => {
+      if (this.props.onToggleLabelActive)
+        this.props.onToggleLabelActive(structuredClone(this.state.labels));
     });
   }
 
@@ -123,7 +138,7 @@ export default class GetLabel extends React.Component {
         {!this.props.isShowDynamically &&
           <>
             {this.state.labels.map(o => (
-              <GetButton class="label">
+              <GetButton class={`label ${o.active ? 'label-active' : ''}`} onClick={this.toggleLabelActive.bind(this, o.id)}>
                 <span class="label-text">{o.label}</span>
               </GetButton>
             ))}

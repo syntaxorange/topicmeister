@@ -313,6 +313,10 @@ body {
   background-color: #8b7edf;
 }
 
+.label-active {
+  background-color: #7669cb;
+}
+
 .label:last-child {
   margin-right: 0;
 }
