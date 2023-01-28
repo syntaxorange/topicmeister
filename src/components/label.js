@@ -50,6 +50,8 @@ export default class GetLabel extends React.Component {
     labels.forEach((o, i) => o.id = i + 1);
     this.setState({
       labels
+    }, () => {
+      this.props.onChangeLabel(structuredClone(this.state.labels));
     });
   }
 

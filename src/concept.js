@@ -74,9 +74,6 @@ export default class Concept extends React.Component {
   }
 
   handleChangeConceptClick() {
-    if (!this.state.title && !this.state.content && !this.state.labels.length )
-      return;
-    
     const clonedConcept = structuredClone(this.props.concept);
     clonedConcept.title = this.state.title || clonedConcept.title;
     clonedConcept.content = this.state.content || clonedConcept.content; 
