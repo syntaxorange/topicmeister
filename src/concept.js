@@ -16,7 +16,7 @@ export default class Concept extends React.Component {
       labels: [],
       dropdownItems: [
         { name: 'Change concept', tmp: 'Cancel change', type: 'change' }, 
-        { name: 'Remove concept', type: 'remove' }
+        { name: 'Remove concept', tmp: 'Cancel remove', type: 'remove' }
       ]
     }
     this.header = React.createRef();
@@ -62,6 +62,7 @@ export default class Concept extends React.Component {
         break;
       case 'remove':
         this.setState({
+          dropdownItems: this.reverseNameDropdown(1),
           isChangeConcept: false
         });
         this.props.onRemoveConcept();
