@@ -80,6 +80,8 @@ const getTopicOffset = e => {
 }
 
 const moveTopic = e => {
+  if (!chrome.runtime?.id)
+    alert('Extension context invalidated. Please reload page.');
   const topicOffset = getTopicOffset(e);
 
   moveState.bound = (e) => {
@@ -96,7 +98,8 @@ const moveTopic = e => {
 
 const stopTopic = topic => {
   if (moveState.move) {
-    storage.set(storageKeyCoor, { x: moveState.x, y: moveState.y });
+    if (chrome.runtime?.id)
+      storage.set(storageKeyCoor, { x: moveState.x, y: moveState.y });
     topic.removeEventListener('mousemove', moveState.bound);
     moveState.move = false;
   }
@@ -312,6 +315,9 @@ const init = () => {
   });
   
   chrome.runtime.onMessage.addListener(({ id, play, topicId, topics, change, remove }, sender, sendResponse) => {
+    if (sender.id !== chrome.runtime.id)
+      return;
+
     const topicsWithStorageKey = { 'topic_meister_topics' : topics };
     const allConcepts = getConcepts(topicsWithStorageKey, true);
     const currentConcept = allConcepts.find(o => o.topicId === topicId && o.id === id);
