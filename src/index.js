@@ -206,15 +206,18 @@ class App extends React.Component {
         data => {
           if (!data)
             return
-          const { playing, someId, someTopicId } = data;
+          const { playing, someId, someTopicId, startTime, someStartTime } = data;
           if (playing === undefined || remove)
             return;
           if (playing)
             currentConcept.views += 1;
           currentConcept.playing = playing;
+          currentConcept.startTime = startTime;
           if (someId) {
             const currentTopic = this.getTopicById(topics, someTopicId);
-            currentTopic.concepts.find(o => o.id == someId).playing = true;
+            const someConceptPlay = currentTopic.concepts.find(o => o.id == someId);
+            someConceptPlay.playing = true;
+            someConceptPlay.startTime = someStartTime;
           }
           this.setState({
             topics
@@ -402,6 +405,7 @@ class App extends React.Component {
       topicId: this.state.currentTopicId,
       play: false,
       playing: false,
+      startTime: null,
       views: 0
     });
     const topics = structuredClone(this.state.topics);

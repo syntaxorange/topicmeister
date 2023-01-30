@@ -4,7 +4,8 @@ import storage from "../storage";
 const storageKey = 'topic_meister_topics';
 const storageKeyCoor = 'topic_meister_topic_coor';
 const storageKeyToogle = 'topic_meister_topic_toggle';
-const playTimeout = 10 * 60 * 1000;
+const playTime = 10 * 60 * 1000;
+let playTimeout = playTime;
 let toggle = false;
 let timerId = 0;
 let index = 0;
@@ -36,14 +37,20 @@ const switchConcept = (topics, isUpdateCounter = true) => {
   index = getPlayingConceptIndex(concepts);
   if (index === concepts.length - 1) {
     index = 0;
-    concepts[concepts.length - 1].playing = false;
+    const concept = concepts[concepts.length - 1];
+    concept.playing = false;
+    concept.startTime = null;
   } else {
     index += 1;
-    concepts[index - 1].playing = false;
+    const concept = concepts[index - 1];
+    concept.playing = false;
+    concept.startTime = null;
   }
   
-  addTopic({title: concepts[index].title, content: concepts[index].content});
-  playConcept(topics, concepts[index], isUpdateCounter);
+  const concept = concepts[index];
+  playTimeout = playTime;
+  addTopic({title: concept.title, content: concept.content});
+  playConcept(topics, concept, { isUpdateCounter, isStorage: true });
 }
 
 const runTimer = () => {
@@ -243,10 +250,11 @@ const addTopic = ({title, content}) => {
   bindTopicEvents({topic, topicControls, topicContainer, topicToggle, topicSwitch});
 }
 
-const playConcept = (topics, concept, isUpdateCounter = true, isStorage = true) => {
+const playConcept = (topics, concept, { isUpdateCounter, isStorage, startTime}) => {
   if (isUpdateCounter) {
     concept.views += 1;
     concept.playing = true;
+    concept.startTime = (new Date).getTime();
   }
   if (isStorage)
     storage.set(storageKey, topics[storageKey]);
@@ -256,6 +264,7 @@ const playConcept = (topics, concept, isUpdateCounter = true, isStorage = true) 
 const stopConcept = (topics, concept) => {
   if (concept) {
     concept.playing = false;
+    concept.startTime = null;
   }
   storage.set(storageKey, topics[storageKey]);
   document.getElementById('topic_meister_topic').remove();
@@ -280,7 +289,7 @@ const init = () => {
     if (!concepts.length)
       return;
     const index = getPlayingConceptIndex(concepts);
-    playConcept(topics, concepts[index], false, false);
+    playConcept(topics, concepts[index], { isUpdateCounter: false, isStorage: false });
     const topic = document.getElementById('topic_meister_topic');
 
     storage.get(storageKeyToogle).then(result => {
@@ -295,17 +304,22 @@ const init = () => {
         topicSwitch: topic.lastElementChild.lastElementChild
        });
     });
+    
+    const timeLeft = (new Date).getTime() - concepts[index].startTime;
+    playTimeout = timeLeft > playTime ? 0 : playTime - timeLeft;
+    console.log('%c%s', 'color: #1995d7', playTimeout * 0.001 / 60);
+    runTimer();
   });
   
-  runTimer();
-  
   chrome.runtime.onMessage.addListener(({ id, play, topicId, topics, change, remove }, sender, sendResponse) => {
-    const allConcepts = getConcepts({ 'topic_meister_topics' : topics }, true);
+    const topicsWithStorageKey = { 'topic_meister_topics' : topics };
+    const allConcepts = getConcepts(topicsWithStorageKey, true);
     const currentConcept = allConcepts.find(o => o.topicId === topicId && o.id === id);
+    const startTime = (new Date).getTime();
     
     if (change) {
       if (currentConcept.playing) {
-        playConcept({ 'topic_meister_topics' : topics }, currentConcept, false, true);
+        playConcept(topicsWithStorageKey, currentConcept, { isUpdateCounter: false, isStorage: true });
         clearTimeout(timerId);
         runTimer();
       } else {
@@ -317,8 +331,8 @@ const init = () => {
 
     if (play) {
       if (!allConcepts.some(o => o.playing)) {
-        playConcept({ 'topic_meister_topics' : topics }, currentConcept);
-        sendResponse({ playing: true });
+        playConcept(topicsWithStorageKey, currentConcept, { isUpdateCounter: true, isStorage: true, startTime });
+        sendResponse({ playing: true, startTime });
         clearTimeout(timerId);
         runTimer();
       } else {
@@ -328,18 +342,18 @@ const init = () => {
     }
 
     if (!play && (remove || currentConcept.playing)) {
-      stopConcept({ 'topic_meister_topics' : topics }, !remove && currentConcept);
+      stopConcept(topicsWithStorageKey, !remove && currentConcept);
       const isSomeConceptPlay = allConcepts.some(o => o.play);
       
       if (isSomeConceptPlay) {
         const someConceptPlay = allConcepts.find(o => o.play);
 
-        playConcept({ 'topic_meister_topics' : topics }, someConceptPlay);
-        sendResponse({ playing: false, someId: someConceptPlay.id, someTopicId: someConceptPlay.topicId });
+        playConcept(topicsWithStorageKey, someConceptPlay, { isUpdateCounter: true, isStorage: true, startTime });
+        sendResponse({ playing: false, startTime: null, someId: someConceptPlay.id, someTopicId: someConceptPlay.topicId, someStartTime: startTime });
         clearTimeout(timerId);
         runTimer();
       } else {
-        sendResponse({ playing: false });
+        sendResponse({ playing: false, startTime: null });
       }
     }
   });
