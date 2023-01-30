@@ -23,7 +23,7 @@ const removeTopic = () => {
     existingTopic.remove();
 }
 
-const switchConcept = (topics, isUpdateCounter = true) => {
+const switchConcept = (topics) => {
   if (!Object.keys(topics).length) {
     clearTimeout(timerId);
     return;
@@ -36,21 +36,21 @@ const switchConcept = (topics, isUpdateCounter = true) => {
   }
   index = getPlayingConceptIndex(concepts);
   if (index === concepts.length - 1) {
+    const concept = concepts[index];
+    concept.playing = false;
+    concept.startTime = null;
     index = 0;
-    const concept = concepts[concepts.length - 1];
-    concept.playing = false;
-    concept.startTime = null;
   } else {
-    index += 1;
-    const concept = concepts[index - 1];
+    const concept = concepts[index];
     concept.playing = false;
     concept.startTime = null;
+    index += 1;
   }
   
   const concept = concepts[index];
   playTimeout = playTime;
   addTopic({title: concept.title, content: concept.content});
-  playConcept(topics, concept, { isUpdateCounter, isStorage: true });
+  playConcept(topics, concept, { isUpdateCounter: true, isStorage: true, startTime: (new Date()).getTime() });
 }
 
 const runTimer = () => {
@@ -169,7 +169,7 @@ const bindTopicEvents = ({ topic, topicControls, topicContainer, topicToggle, to
   topicSwitch.addEventListener('click', () => {
     clearTimeout(timerId);
     storage.get(storageKey).then(topics => {
-      switchConcept(topics, false);
+      switchConcept(topics);
       runTimer();
     });
   });
@@ -257,7 +257,7 @@ const playConcept = (topics, concept, { isUpdateCounter, isStorage, startTime}) 
   if (isUpdateCounter) {
     concept.views += 1;
     concept.playing = true;
-    concept.startTime = (new Date).getTime();
+    concept.startTime = startTime;
   }
   if (isStorage)
     storage.set(storageKey, topics[storageKey]);
@@ -292,6 +292,10 @@ const init = () => {
     if (!concepts.length)
       return;
     const index = getPlayingConceptIndex(concepts);
+
+    if (index < 0)
+      return;
+
     playConcept(topics, concepts[index], { isUpdateCounter: false, isStorage: false });
     const topic = document.getElementById('topic_meister_topic');
 
@@ -347,7 +351,7 @@ const init = () => {
       }
     }
 
-    if (!play && (remove || currentConcept.playing)) {
+    if (!play && currentConcept?.playing) {
       stopConcept(topicsWithStorageKey, !remove && currentConcept);
       const isSomeConceptPlay = allConcepts.some(o => o.play);
       
@@ -356,11 +360,24 @@ const init = () => {
 
         playConcept(topicsWithStorageKey, someConceptPlay, { isUpdateCounter: true, isStorage: true, startTime });
         sendResponse({ playing: false, startTime: null, someId: someConceptPlay.id, someTopicId: someConceptPlay.topicId, someStartTime: startTime });
-        clearTimeout(timerId);
-        runTimer();
+        const topic = document.getElementById('topic_meister_topic');
+        if (toggle) {
+          toggleTopic({ 
+            topic, 
+            topicContainer: topic.firstElementChild, 
+            topicToggle: topic.lastElementChild.firstElementChild, 
+            topicSwitch: topic.lastElementChild.lastElementChild
+           });
+        } else {
+          clearTimeout(timerId);
+          runTimer();
+        }
       } else {
         sendResponse({ playing: false, startTime: null });
       }
+    } else {
+      storage.set(storageKey, topics);
+      sendResponse();
     }
   });
 }
