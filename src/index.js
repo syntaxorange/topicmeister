@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import Concept from "./concept";
+import Topic from "./topic";
 import NewConcept from "./newConcept";
 import GetButton from "./components/button";
 import GetInput from "./components/input";
@@ -39,8 +40,6 @@ class App extends React.Component {
     this.storageKey = 'topic_meister_topics';
     this.handleApplyTopicClick = this.handleApplyTopicClick.bind(this);
     this.handleAddTopicInputChange = this.handleAddTopicInputChange.bind(this);
-    this.handleTopicInputChange = this.handleTopicInputChange.bind(this);
-    this.handleTopicIconClick = this.handleTopicIconClick.bind(this);
     this.handleDialogClick = this.handleDialogClick.bind(this);
     this.handleClickConceptPlay = this.handleClickConceptPlay.bind(this);
   }
@@ -52,8 +51,9 @@ class App extends React.Component {
       if (e.key === 'Enter') {
         if (this.state.newTopicName)
           this.handleApplyTopicClick();
-        else if (target.classList.contains('topic-input'))
-          this.handleTopicIconClick('change', +target.parentNode.id);
+        else if (target.classList.contains('topic-input')) {
+          // this.handleTopicIconClick('change', +target.parentNode.id);
+        }
       }
     });
 
@@ -90,39 +90,21 @@ class App extends React.Component {
   }
 
   renderTopics() {
-    let type = '';
-
-    if (this.state.isRemoveTopics) {
-      type = 'remove';
-    } else if (this.state.isChangeTopics) {
-      type = 'change';
-    } else {
-      type = 'open';
-    }
-
     if (this.state.isOpenConcepts)
       return;
 
     return (
-      this.state.topics.map((o, i) => {
-        let iconType = '';
-        if (o.change) {
-          iconType = 'edit_note';
-        } else if (o.remove) {
-          iconType = 'remove_circle_outline';
-        } else {
-          iconType = 'keyboard_arrow_right';
-        }
-
+      this.state.topics.map(topic => {
         return (
-          <GetButton key={o.id} class="topic" id={o.id} data={type} text={o.change ? '' : o.name}
-            onClick={() => type === 'open' && this.handleTopicIconClick(type, o.id)}
-          >
-            {o.change &&
-              <GetInput class="topic-input" defaultValue={o.name} onChange={e => this.handleTopicInputChange(e, o.id)} />
-            }
-            <span className={`material-icons ${o.remove ? ' md-22' : ''}`} onClick={() => this.handleTopicIconClick(type, o.id)}>{iconType}</span>
-          </GetButton>
+          <Topic 
+            topic={topic} 
+            isRemoveTopics={this.state.isRemoveTopics} 
+            isChangeTopics={this.state.isChangeTopics} 
+            onOpenTopicClick={this.openTopicClick.bind(this)}
+            onRemoveTopicClick={this.removeTopicClick.bind(this)}
+            onTopicInputChange={this.topicInputChange.bind(this)}
+            onChangeTopicClick={this.changeTopicName.bind(this)}
+          />
         )
       })
     );
@@ -274,12 +256,44 @@ class App extends React.Component {
     });
   }
 
-  handleTopicInputChange(e, id) {
+  topicInputChange(id, e) {
     const topics = structuredClone(this.state.topics);
     this.getTopicById(topics, id).name = e.target.value.trim()
 
     this.setState({
       topicsChanged: structuredClone(topics)
+    });
+  }
+
+  changeTopicName(id) {
+    let topicsChanged = structuredClone(this.state[!this.state.topicsChanged.length ? 'topics' : 'topicsChanged']);
+    const topicChanged = this.getTopicById(topicsChanged, id);
+    const topics = structuredClone(this.state.topics);
+    const topic = this.getTopicById(topics, id);
+
+    topic.name = topicChanged.name;
+    topic.change = false;
+
+    let dropdownItems = this.state.dropdownItems;
+    let isChangeTopics = this.state.isChangeTopics;
+    if (topics.every(o => !o.change)) {
+      dropdownItems = this.reverseNameDropdown(1);
+      topicsChanged = [];
+      isChangeTopics = false;
+    }
+
+    this.setState({ topics, topicsChanged, dropdownItems, isChangeTopics });
+    storage.set(this.storageKey, topics);
+  }
+
+  openTopicClick(id) {
+    this.toggleOpenTopic(this.getTopicById(this.state.topics, id).name, id);
+  }
+
+  removeTopicClick(id) {
+    this.setState({
+      isShowDialog: !this.state.isShowDialog,
+      removeTopicId: id
     });
   }
 
@@ -517,42 +531,7 @@ class App extends React.Component {
     this.playConcept({ id: this.state.removeConceptId, topics, remove: true });
   }
 
-  handleTopicIconClick(type, id) {
-    switch (type) {
-      case 'change':
-        let topicsChanged = structuredClone(this.state[!this.state.topicsChanged.length ? 'topics' : 'topicsChanged']);
-        const topicChanged = this.getTopicById(topicsChanged, id);
-        const topics = structuredClone(this.state.topics);
-        const topic = this.getTopicById(topics, id);
-
-        topic.name = topicChanged.name;
-        topic.change = false;
-
-        let dropdownItems = this.state.dropdownItems;
-        let isChangeTopics = this.state.isChangeTopics;
-        if (topics.every(o => !o.change)) {
-          dropdownItems = this.reverseNameDropdown(1);
-          topicsChanged = [];
-          isChangeTopics = false;
-        }
-
-        this.setState({ topics, topicsChanged, dropdownItems, isChangeTopics });
-        storage.set(this.storageKey, topics);
-        break;
-      case 'remove':
-        this.setState({
-          isShowDialog: !this.state.isShowDialog,
-          removeTopicId: id
-        });
-        break;
-      case 'open':
-        this.toggleOpenConcepts(this.getTopicById(this.state.topics, id).name, id);
-        break;
-      default:
-    }
-  }
-
-  toggleOpenConcepts(currentTitle, currentTopicId) {
+  toggleOpenTopic(currentTitle, currentTopicId) {
     this.setState({
       isOpenConcepts: !this.state.isOpenConcepts,
       currentTitle,
@@ -608,7 +587,7 @@ class App extends React.Component {
           <Title 
             isOpenConcepts={this.state.isOpenConcepts} 
             currentTitle={this.state.currentTitle}
-            toggleOpenConcepts={this.toggleOpenConcepts.bind(this, 'Topic Meister', this.state.currentTopicId)}/>
+            toggleOpenTopic={this.toggleOpenTopic.bind(this, 'Topic Meister', this.state.currentTopicId)}/>
           <Top
             isOpenConcepts={this.state.isOpenConcepts}
             isFilterDesc={this.state.isFilterDesc}
