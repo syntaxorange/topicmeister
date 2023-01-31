@@ -1,4 +1,5 @@
 import React from "react";
+import { marked } from "marked";
 import GetButton from "./components/button";
 import GetDropdown from "./components/dropdown";
 import GetInput from "./components/input";
@@ -78,9 +79,10 @@ export default class Concept extends React.Component {
     const clonedConcept = structuredClone(this.props.concept);
     clonedConcept.title = this.state.title || clonedConcept.title;
     clonedConcept.content = this.state.content || clonedConcept.content; 
-    clonedConcept.labels = this.state.labels || clonedConcept.labels;
+    clonedConcept.labels = this.state.labels.length ? this.state.labels : clonedConcept.labels;
 
     this.setState({
+      dropdownItems: this.reverseNameDropdown(0),
       isChangeConcept: false
     });
     this.props.onChangeConceptApply(clonedConcept);
@@ -124,9 +126,7 @@ export default class Concept extends React.Component {
           </div>
         </div>
         {!this.state.isChangeConcept &&
-          <div className="concept-content" style={{height: this.state.isShowFull ? '100%' : ''}}>
-            {this.props.concept.content}
-          </div>
+          <div className="concept-content" style={{height: this.state.isShowFull ? '100%' : ''}} dangerouslySetInnerHTML={{__html: marked.parse(this.props.concept.content)}}></div>
         }
         {this.state.isChangeConcept &&
           <GetTextarea class="new-concept-content" onChange={this.handleContentChange} defaultValue={this.props.concept.content}/>
@@ -134,7 +134,7 @@ export default class Concept extends React.Component {
         <div className="concept-footer">
           {!this.state.isChangeConcept &&
             <>
-              <GetLabel onToggleLabelActive={this.handleToggleLabelActive} labels={this.props.concept.labels} isShowDynamically={false} />
+              <GetLabel onToggleLabelActive={this.handleToggleLabelActive} defaultLabels={this.props.concept.labels} isShowDynamically={false} />
               <GetButton class="fullscreen" onClick={() => this.setState({isShowFull: !this.state.isShowFull})}>
                 <span className="material-icons md-141">{this.state.isShowFull ? 'fullscreen_exit' : 'fullscreen'}</span>
               </GetButton>
@@ -142,7 +142,7 @@ export default class Concept extends React.Component {
           }
           {this.state.isChangeConcept &&
             <>
-              <GetLabel onChangeLabel={this.handleChangeLabels} labels={this.props.concept.labels} isShowDynamically={true} />
+              <GetLabel onChangeLabel={this.handleChangeLabels} defaultLabels={this.props.concept.labels} isShowDynamically={true} />
               <GetButton class="concept-apply" onClick={() => this.handleChangeConceptClick()}>
                 <span className="material-icons md-141">edit_note</span>
               </GetButton>

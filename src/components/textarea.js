@@ -6,6 +6,7 @@ export default class GetTextarea extends React.Component {
       <textarea 
         className={this.props.class}
         onChange={this.props.onChange}
+        value={this.props.value}
         defaultValue={this.props.defaultValue}
       />
     )

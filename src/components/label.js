@@ -6,16 +6,14 @@ export default class GetLabel extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      labels: []
+      labels: this.props.defaultLabels
     }
   }
 
-  componentDidMount() {
-    if (this.props.labels && this.props.labels.length) {
-      this.setState({
-        labels: this.props.labels
-      });
-    }
+  resetLabels(defaultLabels) {
+    this.setState({
+      labels: defaultLabels
+    });
   }
 
   getLabelIndex(id) {

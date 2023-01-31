@@ -5,6 +5,11 @@ body {
   padding: 0;
 }
 
+ul {
+  padding-left: 20px;
+  list-style-type: square;
+}
+
 .topic-meister {
   position: relative;
   box-sizing: border-box;

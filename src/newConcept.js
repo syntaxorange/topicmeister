@@ -12,6 +12,7 @@ export default class NewConcept extends React.Component {
       content: '',
       labels: []
     }
+    this.labelRef = React.createRef();
     this.handleTitleChange = this.handleTitleChange.bind(this);
     this.handleContentChange = this.handleContentChange.bind(this);
     this.handleAddConceptClick = this.handleAddConceptClick.bind(this);
@@ -34,6 +35,13 @@ export default class NewConcept extends React.Component {
     if (!this.state.title || !this.state.content)
       return;
     this.props.onAddConceptApply({...this.state});
+    this.setState({
+      title: '',
+      content: '',
+      labels: []
+    }, () => {
+      this.labelRef.current.resetLabels(this.state.labels);
+    });
   }
 
   handleChangeLabels(labels) {
@@ -45,10 +53,10 @@ export default class NewConcept extends React.Component {
   render() {
     return (
       <div className="new-concept">
-        <GetInput class="new-concept-input" onChange={this.handleTitleChange}/>
-        <GetTextarea class="new-concept-content" onChange={this.handleContentChange}/>
+        <GetInput class="new-concept-input" onChange={this.handleTitleChange} value={this.state.title}/>
+        <GetTextarea class="new-concept-content" onChange={this.handleContentChange} value={this.state.content}/>
         <div className="new-concept-footer">
-          <GetLabel onChangeLabel={this.handleChangeLabels} isShowDynamically={true} />
+          <GetLabel ref={this.labelRef} onChangeLabel={this.handleChangeLabels} isShowDynamically={true} defaultLabels={this.state.labels}/>
           <GetButton class="new-concept-add" onClick={this.handleAddConceptClick}>
             <span className="material-icons md-18">add_box</span>
           </GetButton>
