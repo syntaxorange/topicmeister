@@ -34,8 +34,7 @@ class App extends React.Component {
         { name: 'Add topic', tmp: 'Cancel add', type: 'add' },
         { name: 'Change topic', tmp: 'Cancel change', type: 'change' },
         { name: 'Remove topic', tmp: 'Cancel remove', type: 'remove' }
-      ],
-      topicsChanged: []
+      ]
     }
     this.storageKey = 'topic_meister_topics';
     this.handleApplyTopicClick = this.handleApplyTopicClick.bind(this);
@@ -95,7 +94,6 @@ class App extends React.Component {
             isChangeTopics={this.state.isChangeTopics} 
             onOpenTopicClick={this.openTopicClick.bind(this)}
             onRemoveTopicClick={this.removeTopicClick.bind(this)}
-            onTopicInputChange={this.topicInputChange.bind(this)}
             onChangeTopicClick={this.changeTopicName.bind(this)}
           />
         )
@@ -249,33 +247,21 @@ class App extends React.Component {
     });
   }
 
-  topicInputChange(id, e) {
-    const topics = structuredClone(this.state.topics);
-    this.getTopicById(topics, id).name = e.target.value.trim()
-
-    this.setState({
-      topicsChanged: structuredClone(topics)
-    });
-  }
-
-  changeTopicName(id) {
-    let topicsChanged = structuredClone(this.state[!this.state.topicsChanged.length ? 'topics' : 'topicsChanged']);
-    const topicChanged = this.getTopicById(topicsChanged, id);
+  changeTopicName(id, name) {
     const topics = structuredClone(this.state.topics);
     const topic = this.getTopicById(topics, id);
 
-    topic.name = topicChanged.name;
+    topic.name = name || topic.name;
     topic.change = false;
 
     let dropdownItems = this.state.dropdownItems;
     let isChangeTopics = this.state.isChangeTopics;
     if (topics.every(o => !o.change)) {
       dropdownItems = this.reverseNameDropdown(1);
-      topicsChanged = [];
       isChangeTopics = false;
     }
 
-    this.setState({ topics, topicsChanged, dropdownItems, isChangeTopics });
+    this.setState({ topics, dropdownItems, isChangeTopics });
     storage.set(this.storageKey, topics);
   }
 
@@ -434,6 +420,7 @@ class App extends React.Component {
       dropdownItems: dropdownItemsChange,
       topics,
     }, () => {
+      storage.set(this.storageKey, topics);
       this.focusInput('.topic-input');
     });
   }

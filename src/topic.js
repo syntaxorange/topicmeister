@@ -5,6 +5,9 @@ import GetInput from "./components/input";
 export default class Topic extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      name: '',
+    }
   }
 
   componentDidMount() {
@@ -43,14 +46,16 @@ export default class Topic extends React.Component {
     return iconType;
   }
 
-  handleTopicInputChange(id, e) {
-    this.props.onTopicInputChange(id, e);
+  handleTopicInputChange(e) {
+    this.setState({
+      name: e.target.value.trim()
+    });
   }
 
   handleTopicIconClick(type, id) {
     switch (type) {
       case 'change':
-        this.props.onChangeTopicClick(id);
+        this.props.onChangeTopicClick(id, this.state.name);
         break;
       case 'remove':
         this.props.onRemoveTopicClick(id);
@@ -72,7 +77,7 @@ export default class Topic extends React.Component {
         onClick={() => topicType === 'open' && this.handleTopicIconClick(topicType, topic.id)}
       >
         {topic.change &&
-          <GetInput class="topic-input" defaultValue={topic.name} onChange={this.handleTopicInputChange.bind(this, topic.id)} />
+          <GetInput class="topic-input" defaultValue={topic.name} onChange={this.handleTopicInputChange.bind(this)} />
         }
         <span className={`material-icons ${topic.remove ? ' md-22' : ''}`} onClick={() => this.handleTopicIconClick(topicType, topic.id)}>{iconType}</span>
       </GetButton>

@@ -137,7 +137,7 @@ export default class GetLabel extends React.Component {
         }
         {!this.props.isShowDynamically &&
           <>
-            {this.state.labels.map(o => (
+            {this.state.labels && this.state.labels.map(o => (
               <GetButton class={`label ${o.active ? 'label-active' : ''}`} onClick={this.toggleLabelActive.bind(this, o.id)}>
                 <span class="label-text">{o.label}</span>
               </GetButton>
