@@ -6,7 +6,7 @@ export default class Title extends React.Component {
     return (
       <div className="title">
         {this.props.isOpenConcepts &&
-          <GetButton class="button-arrow" onClick={this.props.toggleOpenConcepts}>
+          <GetButton class="button-arrow" onClick={this.props.toggleOpenTopic}>
             <span className="material-icons">keyboard_arrow_left</span>
           </GetButton>
         }

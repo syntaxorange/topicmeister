@@ -46,15 +46,8 @@ class App extends React.Component {
 
   componentDidMount() {
     document.addEventListener('keyup', e => {
-      const target = e.target;
-
-      if (e.key === 'Enter') {
-        if (this.state.newTopicName)
-          this.handleApplyTopicClick();
-        else if (target.classList.contains('topic-input')) {
-          // this.handleTopicIconClick('change', +target.parentNode.id);
-        }
-      }
+      if (e.key === 'Enter' && this.state.newTopicName)
+        this.handleApplyTopicClick();
     });
 
     storage.get(this.storageKey).then(result => {

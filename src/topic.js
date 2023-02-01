@@ -7,6 +7,15 @@ export default class Topic extends React.Component {
     super(props);
   }
 
+  componentDidMount() {
+    document.addEventListener('keyup', e => {
+      const target = e.target;
+
+      if (e.key === 'Enter' && target.classList.contains('topic-input'))
+        this.handleTopicIconClick('change', +target.parentNode.id);
+    });
+  }
+
   getTopicType() {
     let type = '';
     if (this.props.isRemoveTopics) {
