@@ -18,6 +18,15 @@ export default class GetDropdown extends React.Component {
     });
   }
 
+  reverseNameDropdown(i) {
+    const items = structuredClone(this.props.items);
+
+    items[i].name = items[i].tmp;
+    items[i].tmp = this.props.items[i].name;
+
+    return items;
+  }
+
   handleClick() {
     this.setState({ isActive: !this.state.isActive });
   }

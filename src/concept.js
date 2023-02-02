@@ -21,6 +21,7 @@ export default class Concept extends React.Component {
       ]
     }
     this.header = React.createRef();
+    this.dropdownRef = React.createRef();
     this.handleTitleChange = this.handleTitleChange.bind(this);
     this.handleContentChange = this.handleContentChange.bind(this);
     this.handleControlConceptClick = this.handleControlConceptClick.bind(this);
@@ -40,20 +41,11 @@ export default class Concept extends React.Component {
     });
   }
 
-  reverseNameDropdown(i) {
-    const dropdownItems = structuredClone(this.state.dropdownItems);
-
-    dropdownItems[i].name = dropdownItems[i].tmp;
-    dropdownItems[i].tmp = this.state.dropdownItems[i].name;
-
-    return dropdownItems;
-  }
-
   handleControlConceptClick(type) {
     switch(type) {
       case 'change':
         this.setState({
-          dropdownItems: this.reverseNameDropdown(0),
+          dropdownItems: this.dropdownRef.current.reverseNameDropdown(0),
           isChangeConcept: !this.state.isChangeConcept
         }, () => {
           const inputTitle = this.header.current.querySelector('.new-concept-input');
@@ -63,7 +55,7 @@ export default class Concept extends React.Component {
         break;
       case 'remove':
         this.setState({
-          dropdownItems: this.reverseNameDropdown(1),
+          dropdownItems: this.dropdownRef.current.reverseNameDropdown(1),
           isChangeConcept: false
         });
         this.props.onRemoveConcept();
@@ -82,7 +74,7 @@ export default class Concept extends React.Component {
     clonedConcept.labels = this.state.labels.length ? this.state.labels : clonedConcept.labels;
 
     this.setState({
-      dropdownItems: this.reverseNameDropdown(0),
+      dropdownItems: this.dropdownRef.current.reverseNameDropdown(0),
       isChangeConcept: false
     });
     this.props.onChangeConceptApply(clonedConcept);
@@ -122,7 +114,7 @@ export default class Concept extends React.Component {
             <GetButton class="button-no-pointer" tooltip={this.props.concept.views}>
               <span className="material-icons md-18 md-148">remove_red_eye</span>
             </GetButton>
-            <GetDropdown items={this.state.dropdownItems} iconClass="md-18" onClick={this.handleControlConceptClick}/>
+            <GetDropdown ref={this.dropdownRef} items={this.state.dropdownItems} iconClass="md-18" onClick={this.handleControlConceptClick}/>
           </div>
         </div>
         {!this.state.isChangeConcept &&

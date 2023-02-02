@@ -36,6 +36,7 @@ class App extends React.Component {
     }
     this.storageKey = 'topic_meister_topics';
     this.newTopicRef = React.createRef();
+    this.dropdownRef = React.createRef();
     this.handleDialogClick = this.handleDialogClick.bind(this);
     this.handleClickConceptPlay = this.handleClickConceptPlay.bind(this);
   }
@@ -240,7 +241,7 @@ class App extends React.Component {
     let dropdownItems = this.state.dropdownItems;
     let isChangeTopics = this.state.isChangeTopics;
     if (topics.every(o => !o.change)) {
-      dropdownItems = this.reverseNameDropdown(1);
+      dropdownItems = this.dropdownRef.current.reverseNameDropdown(1);
       isChangeTopics = false;
     }
 
@@ -268,17 +269,8 @@ class App extends React.Component {
     }
   }
 
-  reverseNameDropdown(i) {
-    const dropdownItems = structuredClone(this.state.dropdownItems);
-
-    dropdownItems[i].name = dropdownItems[i].tmp;
-    dropdownItems[i].tmp = this.state.dropdownItems[i].name;
-
-    return dropdownItems;
-  }
-
   addTopic() {
-    const dropdownItemsAdd = this.reverseNameDropdown(0);
+    const dropdownItemsAdd = this.dropdownRef.current.reverseNameDropdown(0);
 
     this.setState({
       isAddTopic: !this.state.isAddTopic,
@@ -394,7 +386,7 @@ class App extends React.Component {
 
   changeTopics() {
     const topics = structuredClone(this.state.topics);
-    const dropdownItemsChange = this.reverseNameDropdown(1);
+    const dropdownItemsChange = this.dropdownRef.current.reverseNameDropdown(1);
     topics.forEach(o => o.change = !this.state.isChangeTopics);
 
     this.setState({
@@ -409,7 +401,7 @@ class App extends React.Component {
 
   removeTopics() {
     const topics = structuredClone(this.state.topics);
-    const dropdownItemsRemove = this.reverseNameDropdown(2);
+    const dropdownItemsRemove = this.dropdownRef.current.reverseNameDropdown(2);
     topics.forEach(o => o.remove = !this.state.isRemoveTopics);
 
     this.setState({
@@ -430,7 +422,7 @@ class App extends React.Component {
     let dropdownItems = this.state.dropdownItems;
     let isRemoveTopics = this.state.isRemoveTopics;
     if (topics.every(o => !o.remove)) {
-      dropdownItems = this.reverseNameDropdown(2);
+      dropdownItems = this.dropdownRef.current.reverseNameDropdown(2);
       isRemoveTopics = false;
     }
 
@@ -546,10 +538,11 @@ class App extends React.Component {
             currentTitle={this.state.currentTitle}
             toggleOpenTopic={this.toggleOpenTopic.bind(this, 'Topic Meister', this.state.currentTopicId)}/>
           <Top
+            ref={this.dropdownRef}
             isOpenConcepts={this.state.isOpenConcepts}
             isFilterDesc={this.state.isFilterDesc}
             isPlayAllConcepts={this.state.isPlayAllConcepts}
-            items={this.state.dropdownItems} 
+            dropdownItems={this.state.dropdownItems} 
             onAddTopic={this.addTopic.bind(this)}
             onChangeTopics={this.changeTopics.bind(this)}
             onRemoveTopics={this.removeTopics.bind(this)}

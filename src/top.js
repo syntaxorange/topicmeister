@@ -2,7 +2,7 @@ import React from "react";
 import GetButton from "./components/button";
 import GetDropdown from "./components/dropdown";
 
-export default class Top extends React.Component {
+class Top extends React.Component {
   constructor(props) {
     super(props);
     this.handleControlTopicClick = this.handleControlTopicClick.bind(this);
@@ -39,8 +39,9 @@ export default class Top extends React.Component {
     return (
       <>
         <GetDropdown
+          ref={this.props.forwardedRef}
           class="dropdown-margin"
-          items={this.props.items}
+          items={this.props.dropdownItems}
           onClick={this.handleControlTopicClick} />
         <GetButton class="add" onClick={() => this.handleControlTopicClick('add')}>
           <span className="material-symbols-outlined">add</span>
@@ -77,3 +78,5 @@ export default class Top extends React.Component {
     );
   }
 }
+
+export default React.forwardRef((props, ref) => <Top forwardedRef={ref} {...props} />);
