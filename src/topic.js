@@ -8,6 +8,7 @@ export default class Topic extends React.Component {
     this.state = {
       name: '',
     }
+    this.inputRef = React.createRef();
   }
 
   componentDidMount() {
@@ -46,6 +47,10 @@ export default class Topic extends React.Component {
     return iconType;
   }
 
+  focusInput() {
+    this.inputRef.current?.focusInput();
+  }
+
   handleTopicInputChange(e) {
     this.setState({
       name: e.target.value.trim()
@@ -77,7 +82,7 @@ export default class Topic extends React.Component {
         onClick={() => topicType === 'open' && this.handleTopicIconClick(topicType, topic.id)}
       >
         {topic.change &&
-          <GetInput class="topic-input" defaultValue={topic.name} onChange={this.handleTopicInputChange.bind(this)} />
+          <GetInput ref={this.inputRef} class="topic-input" defaultValue={topic.name} onChange={this.handleTopicInputChange.bind(this)} />
         }
         <span className={`material-icons ${topic.remove ? ' md-22' : ''}`} onClick={() => this.handleTopicIconClick(topicType, topic.id)}>{iconType}</span>
       </GetButton>

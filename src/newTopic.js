@@ -8,6 +8,7 @@ export default class NewTopic extends React.Component {
     this.state = {
       name: ''
     }
+    this.newTopicInput = React.createRef();
   }
 
   componentDidMount() {
@@ -19,6 +20,10 @@ export default class NewTopic extends React.Component {
 
   resetName() {
     this.setState({ name: '' });
+  }
+
+  focusInput() {
+    this.newTopicInput.current.focusInput();
   }
 
   handleAddTopicInputChange(e) {
@@ -35,7 +40,7 @@ export default class NewTopic extends React.Component {
   render() {
     return (
       <GetButton class="topic">
-        <GetInput class="topic-input" value={this.state.name} onChange={this.handleAddTopicInputChange.bind(this)} />
+        <GetInput ref={this.newTopicInput} class="topic-input" value={this.state.name} onChange={this.handleAddTopicInputChange.bind(this)} />
         <span className="material-icons material-icons-outlined" onClick={this.handleApplyAddTopicClick.bind(this)}>add_box</span>
       </GetButton>
     );

@@ -8,6 +8,7 @@ export default class GetLabel extends React.Component {
     this.state = {
       labels: this.props.defaultLabels
     }
+    this.labelsInputRefs = new WeakMap;
   }
 
   resetLabels(defaultLabels) {
@@ -24,6 +25,10 @@ export default class GetLabel extends React.Component {
       labels,
       index
     }
+  }
+
+  setLabelInputRef = o => ref => {
+    this.labelsInputRefs.set(o, ref);
   }
 
   addLabel() {
@@ -54,7 +59,7 @@ export default class GetLabel extends React.Component {
   }
 
   toggleChangeLabel(id, state, e) {
-    const {labels, index } = this.getLabelIndex(id);
+    const { labels, index } = this.getLabelIndex(id);
     const label = labels[index];
 
     if (!label.label)
@@ -64,14 +69,8 @@ export default class GetLabel extends React.Component {
     this.setState({
       labels 
     }, () => {
-      if (state) {
-        const input = document.getElementById(id);
-
-        if (input) {
-          input.setSelectionRange(0, 0);
-          input.focus();
-        }
-      }
+      if (state)
+        this.labelsInputRefs.get(label).focusInput();
     });
   }
 
@@ -123,7 +122,7 @@ export default class GetLabel extends React.Component {
                   <span class="label-text" onClick={this.toggleChangeLabel.bind(this, o.id, true)}>{o.label}</span>
                 }
                 {o.change && 
-                  <GetInput class="label-input" id={o.id} onKeyUp={this.changeLabel.bind(this, o.id)} defaultValue={o.label} />
+                  <GetInput ref={this.setLabelInputRef(o)} class="label-input" id={o.id} onKeyUp={this.changeLabel.bind(this, o.id)} defaultValue={o.label} />
                 }
                 {!o.change && 
                   <span class="material-icons md-16" onClick={this.removeLabel.bind(this, o.id)}>highlight_off</span>

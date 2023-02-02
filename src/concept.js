@@ -20,7 +20,7 @@ export default class Concept extends React.Component {
         { name: 'Remove concept', tmp: 'Cancel remove', type: 'remove' }
       ]
     }
-    this.header = React.createRef();
+    this.newConceptInputRef = React.createRef();
     this.dropdownRef = React.createRef();
     this.handleTitleChange = this.handleTitleChange.bind(this);
     this.handleContentChange = this.handleContentChange.bind(this);
@@ -48,9 +48,7 @@ export default class Concept extends React.Component {
           dropdownItems: this.dropdownRef.current.reverseNameDropdown(0),
           isChangeConcept: !this.state.isChangeConcept
         }, () => {
-          const inputTitle = this.header.current.querySelector('.new-concept-input');
-          if (inputTitle)
-            inputTitle.focus();
+          this.newConceptInputRef.current?.focusInput();
         });
         break;
       case 'remove':
@@ -100,12 +98,12 @@ export default class Concept extends React.Component {
   renderConcept() {
     return (
       <div key={this.props.concept.id} className="concept">
-        <div className="concept-header" ref={this.header}>
+        <div className="concept-header">
           {!this.state.isChangeConcept &&
             <div className="concept-title">{this.props.concept.title}</div>
           }
           {this.state.isChangeConcept &&
-            <GetInput class="new-concept-input" onChange={this.handleTitleChange} defaultValue={this.props.concept.title}/>
+            <GetInput ref={this.newConceptInputRef} class="new-concept-input" onChange={this.handleTitleChange} defaultValue={this.props.concept.title}/>
           }
           <div className="concept-icons">
             <GetButton data="play" onClick={this.handleControlConceptClick}>

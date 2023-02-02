@@ -13,12 +13,17 @@ export default class NewConcept extends React.Component {
       labels: []
     }
     this.labelRef = React.createRef();
+    this.inputRef = React.createRef();
     this.handleTitleChange = this.handleTitleChange.bind(this);
     this.handleContentChange = this.handleContentChange.bind(this);
     this.handleAddConceptClick = this.handleAddConceptClick.bind(this);
     this.handleChangeLabels = this.handleChangeLabels.bind(this);
   }
   
+  focusInput() {
+    this.inputRef.current.focusInput();
+  }
+
   handleTitleChange(e) {
     this.setState({
       title: e.target.value.trim()
@@ -53,7 +58,7 @@ export default class NewConcept extends React.Component {
   render() {
     return (
       <div className="new-concept">
-        <GetInput class="new-concept-input" onChange={this.handleTitleChange} value={this.state.title}/>
+        <GetInput ref={this.inputRef} class="new-concept-input" onChange={this.handleTitleChange} value={this.state.title}/>
         <GetTextarea class="new-concept-content" onChange={this.handleContentChange} value={this.state.content}/>
         <div className="new-concept-footer">
           <GetLabel ref={this.labelRef} onChangeLabel={this.handleChangeLabels} isShowDynamically={true} defaultLabels={this.state.labels}/>

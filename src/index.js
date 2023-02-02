@@ -37,6 +37,8 @@ class App extends React.Component {
     this.storageKey = 'topic_meister_topics';
     this.newTopicRef = React.createRef();
     this.dropdownRef = React.createRef();
+    this.newConceptRef = React.createRef();
+    this.topicsRef = new WeakMap;
     this.handleDialogClick = this.handleDialogClick.bind(this);
     this.handleClickConceptPlay = this.handleClickConceptPlay.bind(this);
   }
@@ -65,6 +67,10 @@ class App extends React.Component {
     return topics.find(o => o.id === id);
   }
 
+  setTopicRef = o => ref => {
+    this.topicsRef.set(o, ref);
+  }
+
   updateIndexes(arrayObjects, updateTopicId = true) {
     arrayObjects.forEach((o, i) => {
       o.id = i + 1;
@@ -81,7 +87,8 @@ class App extends React.Component {
     return (
       this.state.topics.map(topic => {
         return (
-          <Topic 
+          <Topic
+            ref={this.setTopicRef(topic)}
             topic={topic} 
             isRemoveTopics={this.state.isRemoveTopics} 
             isChangeTopics={this.state.isChangeTopics} 
@@ -105,7 +112,7 @@ class App extends React.Component {
   renderAddConcept() {
     if (this.state.isAddConcept && this.state.isOpenConcepts) {
       return (
-        <NewConcept onAddConceptApply={this.handleAddConceptApply.bind(this)}/>
+        <NewConcept ref={this.newConceptRef} onAddConceptApply={this.handleAddConceptApply.bind(this)}/>
       );
     }
   }
@@ -260,15 +267,6 @@ class App extends React.Component {
     });
   }
 
-  focusInput(selector) {
-    const topicInput = document.querySelector(selector);
-
-    if (topicInput) {
-      topicInput.setSelectionRange(0, 0);
-      topicInput.focus();
-    }
-  }
-
   addTopic() {
     const dropdownItemsAdd = this.dropdownRef.current.reverseNameDropdown(0);
 
@@ -277,7 +275,7 @@ class App extends React.Component {
       dropdownItems: dropdownItemsAdd
     }, () => {
       if (this.state.isAddTopic)
-        this.focusInput('.topic-input');
+        this.newTopicRef.current.focusInput();
     });
   }
 
@@ -286,7 +284,7 @@ class App extends React.Component {
       isAddConcept: !this.state.isAddConcept
     }, () => {
       if (this.state.isAddConcept)
-        this.focusInput('.new-concept-input');
+        this.newConceptRef.current.focusInput();
     });
   }
 
@@ -395,7 +393,7 @@ class App extends React.Component {
       topics,
     }, () => {
       storage.set(this.storageKey, topics);
-      this.focusInput('.topic-input');
+      this.topicsRef.get(topics[0])?.focusInput();
     });
   }
 
