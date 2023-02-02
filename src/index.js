@@ -2,9 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import Concept from "./concept";
 import Topic from "./topic";
+import NewTopic from "./newTopic";
 import NewConcept from "./newConcept";
-import GetButton from "./components/button";
-import GetInput from "./components/input";
 import GetDialog from "./components/dialog";
 import Top from "./top";
 import Title from "./title";
@@ -26,7 +25,6 @@ class App extends React.Component {
       removeConceptId: 0,
       currentTitle: 'Topic Meister',
       currentTopicId: 0,
-      newTopicName: '',
       isFilterDesc: true,
       topics: [],
       conceptsTmp: [],
@@ -37,18 +35,12 @@ class App extends React.Component {
       ]
     }
     this.storageKey = 'topic_meister_topics';
-    this.handleApplyTopicClick = this.handleApplyTopicClick.bind(this);
-    this.handleAddTopicInputChange = this.handleAddTopicInputChange.bind(this);
+    this.newTopicRef = React.createRef();
     this.handleDialogClick = this.handleDialogClick.bind(this);
     this.handleClickConceptPlay = this.handleClickConceptPlay.bind(this);
   }
 
   componentDidMount() {
-    document.addEventListener('keyup', e => {
-      if (e.key === 'Enter' && this.state.newTopicName)
-        this.handleApplyTopicClick();
-    });
-
     storage.get(this.storageKey).then(result => {
       if (!result[this.storageKey])
         return;
@@ -104,10 +96,7 @@ class App extends React.Component {
   renderAddTopic() {
     if (this.state.isAddTopic && !this.state.isOpenConcepts) {
       return (
-        <GetButton class="topic">
-          <GetInput class="topic-input" value={this.state.newTopicName} onChange={this.handleAddTopicInputChange} />
-          <span className="material-icons material-icons-outlined" onClick={this.handleApplyTopicClick}>add_box</span>
-        </GetButton>
+        <NewTopic ref={this.newTopicRef} onApplyAddTopicClick={this.addNewTopic.bind(this)}/>
       );
     }
   }
@@ -241,12 +230,6 @@ class App extends React.Component {
     this.playConcept({ id, play, topicId, currentConcept, topics });
   }
 
-  handleAddTopicInputChange(e) {
-    this.setState({
-      newTopicName: e.target.value
-    });
-  }
-
   changeTopicName(id, name) {
     const topics = structuredClone(this.state.topics);
     const topic = this.getTopicById(topics, id);
@@ -299,7 +282,6 @@ class App extends React.Component {
 
     this.setState({
       isAddTopic: !this.state.isAddTopic,
-      newTopicName: '',
       dropdownItems: dropdownItemsAdd
     }, () => {
       if (this.state.isAddTopic)
@@ -542,21 +524,16 @@ class App extends React.Component {
     }
   }
 
-  handleApplyTopicClick() {
-    const newTopicName = this.state.newTopicName;
+  addNewTopic(name) {
     let topics = structuredClone(this.state.topics);
 
-    if (!newTopicName || topics.some(v => v.name === newTopicName)) {
+    if (topics.some(v => v.name === name))
       return;
-    }
 
-    topics.unshift({ id: 1, name: newTopicName.trim(), change: false, remove: false, concepts: [] });
+    topics.unshift({ id: 1, name, change: false, remove: false, concepts: [] });
     this.updateIndexes(topics);
-
-    this.setState({
-      topics,
-      newTopicName: ''
-    });
+    this.setState({ topics });
+    this.newTopicRef.current.resetName();
     storage.set(this.storageKey, topics);
   }
 
