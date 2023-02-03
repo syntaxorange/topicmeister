@@ -28,7 +28,7 @@ export default class NewTopic extends React.Component {
 
   handleAddTopicInputChange(e) {
     this.setState({
-      name: e.target.value.trim()
+      name: e.target.value
     });
   }
 

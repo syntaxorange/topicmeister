@@ -26,13 +26,13 @@ export default class NewConcept extends React.Component {
 
   handleTitleChange(e) {
     this.setState({
-      title: e.target.value.trim()
+      title: e.target.value
     });
   }
 
   handleContentChange(e) {
     this.setState({
-      content: e.target.value.trim()
+      content: e.target.value
     });
   }
 

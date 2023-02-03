@@ -364,8 +364,8 @@ class App extends React.Component {
 
     clonedTopic.concepts.unshift({
       id: !maxConceptId ? 1 : maxConceptId + 1,
-      title: data.title,
-      content: data.content,
+      title: data.title.trim(),
+      content: data.content.trim(),
       labels: data.labels,
       topicId: this.state.currentTopicId,
       play: false,
@@ -520,7 +520,7 @@ class App extends React.Component {
     if (topics.some(v => v.name === name))
       return;
 
-    topics.unshift({ id: 1, name, change: false, remove: false, concepts: [] });
+    topics.unshift({ id: 1, name: name.trim(), change: false, remove: false, concepts: [] });
     this.updateIndexes(topics);
     this.setState({ topics });
     this.newTopicRef.current.resetName();
