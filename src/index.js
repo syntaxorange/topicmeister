@@ -39,6 +39,7 @@ class App extends React.Component {
     this.dropdownRef = React.createRef();
     this.newConceptRef = React.createRef();
     this.topicsRef = new WeakMap;
+    this.conceptsRef = new WeakMap;
     this.handleDialogClick = this.handleDialogClick.bind(this);
     this.handleClickConceptPlay = this.handleClickConceptPlay.bind(this);
   }
@@ -69,6 +70,10 @@ class App extends React.Component {
 
   setTopicRef = o => ref => {
     this.topicsRef.set(o, ref);
+  }
+
+  setConceptRef = o => ref => {
+    this.conceptsRef.set(o, ref);
   }
 
   updateIndexes(arrayObjects, updateTopicId = true) {
@@ -124,6 +129,7 @@ class App extends React.Component {
     const currentTopic = this.getTopicById(this.state.topics, this.state.currentTopicId);
     return currentTopic.concepts.map(concept => {
       return <Concept 
+              ref={this.setConceptRef(concept)}
               key={concept.id}
               id={concept.id}
               concept={concept} 
@@ -502,7 +508,13 @@ class App extends React.Component {
   handleDialogClick(type) {
     switch (type) {
       case 'decline':
-        this.setState({ isShowDialog: false })
+        this.setState({ isShowDialog: false }, () => {
+          if (this.state.removeConceptId > 0) {
+            const currentTopic = this.getTopicById(this.state.topics, this.state.currentTopicId);
+            const currentConcept = currentTopic.concepts.find(o => o.id === this.state.removeConceptId);
+            this.conceptsRef.get(currentConcept)?.reverseNameDropdown(1);
+          }
+        });
         break;
       case 'accept':
         if (this.state.removeTopicId > 0)

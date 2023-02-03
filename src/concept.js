@@ -29,6 +29,12 @@ export default class Concept extends React.Component {
     this.handleToggleLabelActive = this.handleToggleLabelActive.bind(this);
   }
 
+  reverseNameDropdown(index) {
+    this.setState({
+      dropdownItems: this.dropdownRef.current.reverseNameDropdown(index)
+    }); 
+  }
+
   handleTitleChange(e) {
     this.setState({
       title: e.target.value.trim()
