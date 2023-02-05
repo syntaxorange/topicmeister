@@ -40,8 +40,6 @@ class App extends React.Component {
     this.newConceptRef = React.createRef();
     this.topicsRef = new WeakMap;
     this.conceptsRef = new WeakMap;
-    this.handleDialogClick = this.handleDialogClick.bind(this);
-    this.handleClickConceptPlay = this.handleClickConceptPlay.bind(this);
   }
 
   componentDidMount() {
@@ -58,14 +56,16 @@ class App extends React.Component {
         topics.forEach(o => o.change = false);
       }
 
-      this.setState({
-        topics
-      });
+      this.setState({ topics });
     });
   }
 
   getTopicById(topics, id) {
     return topics.find(o => o.id === id);
+  }
+
+  getConceptById(topic, id) {
+    return topic.concepts.find(o => o.id == id);
   }
 
   setTopicRef = o => ref => {
@@ -76,6 +76,13 @@ class App extends React.Component {
     this.conceptsRef.set(o, ref);
   }
 
+  setRemoveTopicId(id) {
+    this.setState({
+      isShowDialog: !this.state.isShowDialog,
+      removeTopicId: id
+    });
+  }
+
   updateIndexes(arrayObjects, updateTopicId = true) {
     arrayObjects.forEach((o, i) => {
       o.id = i + 1;
@@ -83,6 +90,22 @@ class App extends React.Component {
       if (updateTopicId)
         o.concepts.forEach(o1 => o1.topicId = o.id);
     });
+  }
+
+  renderAddTopic() {
+    if (this.state.isAddTopic && !this.state.isOpenConcepts) {
+      return (
+        <NewTopic ref={this.newTopicRef} onApplyAddTopicClick={this.addNewTopic.bind(this)}/>
+      );
+    }
+  }
+
+  renderAddConcept() {
+    if (this.state.isAddConcept && this.state.isOpenConcepts) {
+      return (
+        <NewConcept ref={this.newConceptRef} onAddConceptApply={this.addNewConcept.bind(this)}/>
+      );
+    }
   }
 
   renderTopics() {
@@ -98,28 +121,12 @@ class App extends React.Component {
             isRemoveTopics={this.state.isRemoveTopics} 
             isChangeTopics={this.state.isChangeTopics} 
             onOpenTopicClick={this.openTopicClick.bind(this)}
-            onRemoveTopicClick={this.removeTopicClick.bind(this)}
+            onRemoveTopicClick={this.setRemoveTopicId.bind(this)}
             onChangeTopicClick={this.changeTopicName.bind(this)}
           />
         )
       })
     );
-  }
-
-  renderAddTopic() {
-    if (this.state.isAddTopic && !this.state.isOpenConcepts) {
-      return (
-        <NewTopic ref={this.newTopicRef} onApplyAddTopicClick={this.addNewTopic.bind(this)}/>
-      );
-    }
-  }
-
-  renderAddConcept() {
-    if (this.state.isAddConcept && this.state.isOpenConcepts) {
-      return (
-        <NewConcept ref={this.newConceptRef} onAddConceptApply={this.handleAddConceptApply.bind(this)}/>
-      );
-    }
   }
 
   renderConcepts() {
@@ -133,9 +140,9 @@ class App extends React.Component {
               key={concept.id}
               id={concept.id}
               concept={concept} 
-              onToggleLabelActive={data => this.changeConcept(data, false, true)}
-              onChangeConceptApply={data => this.changeConcept(data)}
-              onClickConceptPlay={this.handleClickConceptPlay}
+              onToggleLabelActive={data => this.changeConceptData(data, false, true)}
+              onChangeConceptApply={data => this.changeConceptData(data)}
+              onClickConceptPlay={this.playConcept.bind(this)}
               onRemoveConcept={() => this.setState({removeConceptId: concept.id, isShowDialog: !this.state.isShowDialog})} />
     });
   }
@@ -149,19 +156,19 @@ class App extends React.Component {
         <GetDialog 
           title="Remove topic" 
           content="You really want to delete the topic?" 
-          onClick={this.handleDialogClick} />
+          onClick={this.handleDialogClick.bind(this)} />
       );
     } else {
       return (
         <GetDialog 
           title="Remove concept" 
           content="You really want to delete the concept?" 
-          onClick={this.handleDialogClick} />
+          onClick={this.handleDialogClick.bind(this)} />
       );
     }
   }
 
-  playConcept({ id, play, topicId, currentConcept, topics, change, remove }) {
+  sendChromeMessage({ id, play, topicId, currentConcept, topics, change, remove }) {
     /* eslint-disable */
     chrome.tabs && chrome.tabs.query({
       active: true,
@@ -171,14 +178,7 @@ class App extends React.Component {
 
       chrome.tabs.sendMessage(
         currentTabId,
-        { 
-          id, 
-          play,
-          topicId,
-          topics,
-          change,
-          remove
-        },
+        { id, play, topicId, topics, change, remove },
         data => {
           if (!data)
             return
@@ -191,20 +191,18 @@ class App extends React.Component {
           currentConcept.startTime = startTime;
           if (someId) {
             const currentTopic = this.getTopicById(topics, someTopicId);
-            const someConceptPlay = currentTopic.concepts.find(o => o.id == someId);
+            const someConceptPlay = this.getConceptById(currentTopic, someId);
             someConceptPlay.playing = true;
             someConceptPlay.startTime = someStartTime;
           }
-          this.setState({
-            topics
-          });
+          this.setState({ topics });
         }
       );
     });
     /* eslint-enable */
   }
 
-  handleClickConceptPlay(id) {
+  playConcept(id) {
     const topics = structuredClone(this.state.topics);
     const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
     const currentConcept = currentTopic.concepts.find(o => o.id === id);
@@ -217,10 +215,10 @@ class App extends React.Component {
 
     const { play, topicId } = currentConcept;
 
-    this.playConcept({ id, play, topicId, currentConcept, topics });
+    this.sendChromeMessage({ id, play, topicId, currentConcept, topics });
   }
 
-  handleClickConceptsPlay() {
+  playConcepts() {
     const topics = this.state.topics;
     const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
     const currentConcepts = currentTopic.concepts;
@@ -241,7 +239,7 @@ class App extends React.Component {
     const currentConcept = playingConcept ? playingConcept : currentConcepts[0];
     const { id, play, topicId } = currentConcept;
 
-    this.playConcept({ id, play, topicId, currentConcept, topics });
+    this.sendChromeMessage({ id, play, topicId, currentConcept, topics });
   }
 
   changeTopicName(id, name) {
@@ -262,18 +260,31 @@ class App extends React.Component {
     storage.set(this.storageKey, topics);
   }
 
+  changeConceptData(changedConcept, play = true, filterByLabels) {
+    const topics = structuredClone(this.state.topics);
+    const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
+    const index = currentTopic.concepts.findIndex(o => o.id === changedConcept.id);
+    currentTopic.concepts[index] = changedConcept;
+
+    this.setState({
+      topics
+    }, () => {
+      if (filterByLabels)
+        this.filterConceptsByLabels();
+    });
+
+    if (!play)
+      return;
+
+    const { id, topicId } = changedConcept;
+    this.sendChromeMessage({ id, topicId, topics, change: true });
+  }
+
   openTopicClick(id) {
     this.toggleOpenTopic(this.getTopicById(this.state.topics, id).name, id);
   }
 
-  removeTopicClick(id) {
-    this.setState({
-      isShowDialog: !this.state.isShowDialog,
-      removeTopicId: id
-    });
-  }
-
-  addTopic() {
+  toggleAddTopicInput() {
     const dropdownItemsAdd = this.dropdownRef.current.reverseNameDropdown(0);
 
     this.setState({
@@ -285,12 +296,55 @@ class App extends React.Component {
     });
   }
 
-  addConcept() {
+  toggleAddConceptField() {
     this.setState({
       isAddConcept: !this.state.isAddConcept
     }, () => {
       if (this.state.isAddConcept)
         this.newConceptRef.current.focusInput();
+    });
+  }
+
+  toggleChangeTopicsInput() {
+    const topics = structuredClone(this.state.topics);
+    const dropdownItemsChange = this.dropdownRef.current.reverseNameDropdown(1);
+    topics.forEach(o => o.change = !this.state.isChangeTopics);
+
+    this.setState({
+      isChangeTopics: !this.state.isChangeTopics,
+      dropdownItems: dropdownItemsChange,
+      topics,
+    }, () => {
+      storage.set(this.storageKey, topics);
+      this.topicsRef.get(topics[0])?.focusInput();
+    });
+  }
+
+  toggleRemoveTopicsIcon() {
+    const topics = structuredClone(this.state.topics);
+    const dropdownItemsRemove = this.dropdownRef.current.reverseNameDropdown(2);
+    topics.forEach(o => o.remove = !this.state.isRemoveTopics);
+
+    this.setState({
+      isRemoveTopics: !this.state.isRemoveTopics,
+      dropdownItems: dropdownItemsRemove,
+      topics,
+    });
+  }
+
+  toggleOpenTopic(currentTitle, currentTopicId) {
+    this.setState({
+      isOpenConcepts: !this.state.isOpenConcepts,
+      currentTitle,
+      currentTopicId
+    }, () => {
+      storage.get(this.storageKey).then(result => {
+        const currentTopic = this.getTopicById(result[this.storageKey], this.state.currentTopicId);
+        const currentConcepts = currentTopic.concepts;
+        this.setState({
+          isPlayAllConcepts: currentConcepts.length ? currentConcepts.every(o => o.play) : this.state.isPlayAllConcepts
+        });
+      });
     });
   }
 
@@ -334,18 +388,14 @@ class App extends React.Component {
       .filter((v, i, a) => a.indexOf(v) === i);
 
     if (activeLabels.length === 1) {
-      this.setState({
-        conceptsTmp: structuredClone(concepts)
-      });
+      this.setState({ conceptsTmp: structuredClone(concepts) });
     }
 
     if (activeLabels.length) {
       const filteredConcepts = concepts.filter(o => o.labels.some(o1 => activeLabels.indexOf(o1.label) >= 0));
       currentTopic.concepts = filteredConcepts;
 
-      this.setState({
-        topics
-      });
+      this.setState({ topics });
     } else {
       const concepts = structuredClone(this.state.conceptsTmp);
       
@@ -359,7 +409,20 @@ class App extends React.Component {
     }
   }
 
-  handleAddConceptApply(data) {
+  addNewTopic(name) {
+    let topics = structuredClone(this.state.topics);
+
+    if (topics.some(v => v.name === name))
+      return;
+
+    topics.unshift({ id: 1, name: name.trim(), change: false, remove: false, concepts: [] });
+    this.updateIndexes(topics);
+    this.setState({ topics });
+    this.newTopicRef.current.resetName();
+    storage.set(this.storageKey, topics);
+  }
+
+  addNewConcept(data) {
     const currentTopic = this.getTopicById(this.state.topics, this.state.currentTopicId);
     const clonedTopic = structuredClone(currentTopic);
     const currentConcepts = clonedTopic.concepts;
@@ -382,37 +445,8 @@ class App extends React.Component {
     const topics = structuredClone(this.state.topics);
     this.getTopicById(topics, this.state.currentTopicId).concepts = currentConcepts;
 
-    this.setState({
-      topics
-    });
+    this.setState({ topics });
     storage.set(this.storageKey, topics);
-  }
-
-  changeTopics() {
-    const topics = structuredClone(this.state.topics);
-    const dropdownItemsChange = this.dropdownRef.current.reverseNameDropdown(1);
-    topics.forEach(o => o.change = !this.state.isChangeTopics);
-
-    this.setState({
-      isChangeTopics: !this.state.isChangeTopics,
-      dropdownItems: dropdownItemsChange,
-      topics,
-    }, () => {
-      storage.set(this.storageKey, topics);
-      this.topicsRef.get(topics[0])?.focusInput();
-    });
-  }
-
-  removeTopics() {
-    const topics = structuredClone(this.state.topics);
-    const dropdownItemsRemove = this.dropdownRef.current.reverseNameDropdown(2);
-    topics.forEach(o => o.remove = !this.state.isRemoveTopics);
-
-    this.setState({
-      isRemoveTopics: !this.state.isRemoveTopics,
-      dropdownItems: dropdownItemsRemove,
-      topics,
-    });
   }
 
   removeTopic() {
@@ -441,33 +475,12 @@ class App extends React.Component {
     if (playing) {
       const { id, topicId } = playing;
       
-      this.playConcept({ id, topicId, topics, remove: true });
+      this.sendChromeMessage({ id, topicId, topics, remove: true });
     } else {
       storage.set(this.storageKey, topics);
     }
   }
 
-  changeConcept(changedConcept, play = true, filterByLabels) {
-    const topics = structuredClone(this.state.topics);
-    const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
-    const index = currentTopic.concepts.findIndex(o => o.id === changedConcept.id);
-    currentTopic.concepts[index] = changedConcept;
-
-    this.setState({
-      topics
-    }, () => {
-      if (filterByLabels)
-        this.filterConceptsByLabels();
-    });
-
-    if (!play)
-      return;
-
-    const { id, topicId } = changedConcept;
-
-    this.playConcept({ id, topicId, topics, change: true });
-  }
-  
   removeConcept() {
     const topics = structuredClone(this.state.topics);
     const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
@@ -486,32 +499,16 @@ class App extends React.Component {
       topics
     });
 
-    this.playConcept({ id: this.state.removeConceptId, topics, remove: true });
+    this.sendChromeMessage({ id: this.state.removeConceptId, topics, remove: true });
   }
-
-  toggleOpenTopic(currentTitle, currentTopicId) {
-    this.setState({
-      isOpenConcepts: !this.state.isOpenConcepts,
-      currentTitle,
-      currentTopicId
-    }, () => {
-      storage.get(this.storageKey).then(result => {
-        const currentTopic = this.getTopicById(result[this.storageKey], this.state.currentTopicId);
-        const currentConcepts = currentTopic.concepts;
-        this.setState({
-          isPlayAllConcepts: currentConcepts.length ? currentConcepts.every(o => o.play) : this.state.isPlayAllConcepts
-        });
-      });
-    });
-  }
-
+  
   handleDialogClick(type) {
     switch (type) {
       case 'decline':
         this.setState({ isShowDialog: false }, () => {
           if (this.state.removeConceptId > 0) {
             const currentTopic = this.getTopicById(this.state.topics, this.state.currentTopicId);
-            const currentConcept = currentTopic.concepts.find(o => o.id === this.state.removeConceptId);
+            const currentConcept = this.getConceptById(currentTopic, this.state.removeConceptId);
             this.conceptsRef.get(currentConcept)?.reverseNameDropdown(1);
           }
         });
@@ -524,19 +521,6 @@ class App extends React.Component {
         break;
       default:
     }
-  }
-
-  addNewTopic(name) {
-    let topics = structuredClone(this.state.topics);
-
-    if (topics.some(v => v.name === name))
-      return;
-
-    topics.unshift({ id: 1, name: name.trim(), change: false, remove: false, concepts: [] });
-    this.updateIndexes(topics);
-    this.setState({ topics });
-    this.newTopicRef.current.resetName();
-    storage.set(this.storageKey, topics);
   }
 
   render() {
@@ -553,12 +537,12 @@ class App extends React.Component {
             isFilterDesc={this.state.isFilterDesc}
             isPlayAllConcepts={this.state.isPlayAllConcepts}
             dropdownItems={this.state.dropdownItems} 
-            onAddTopic={this.addTopic.bind(this)}
-            onChangeTopics={this.changeTopics.bind(this)}
-            onRemoveTopics={this.removeTopics.bind(this)}
-            onAddConcept={this.addConcept.bind(this)}
+            onAddTopic={this.toggleAddTopicInput.bind(this)}
+            onChangeTopics={this.toggleChangeTopicsInput.bind(this)}
+            onRemoveTopics={this.toggleRemoveTopicsIcon.bind(this)}
+            onAddConcept={this.toggleAddConceptField.bind(this)}
             onFilterConcepts={this.filterConcepts.bind(this)}
-            onClickConceptsPlay={this.handleClickConceptsPlay.bind(this)}/>
+            onClickConceptsPlay={this.playConcepts.bind(this)}/>
         </div>
         {this.renderAddTopic()}
         {this.renderTopics()}
