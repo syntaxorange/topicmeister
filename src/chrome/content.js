@@ -1,4 +1,5 @@
 import storage from "../storage";
+import { marked } from 'marked';
 
 /* eslint-disable */
 const storageKey = 'topic_meister_topics';
@@ -239,7 +240,12 @@ const addTopic = ({title, content}) => {
   topicToggle.type = 'button';
   topicSwitch.type = 'button';
 
-  topicContent.textContent = content;
+  topicContent.innerHTML = marked.parse(content, (err, html) => {
+    html = html.replace(/<ul>/g, '<ul style="padding-left: 20px; margin: 8px 0;">')
+      .replace(/<code>/g, '<code style="padding: 0.2em 0.4em; margin: 0; font-size: 85%; background: #1b1f230d; border-radius: 3px;">')
+      .replace(/<p>/g, '<p style="margin: 0 0 10px;">');
+    return html;
+  });
   topicTitle.textContent = title;
   
   topic.appendChild(topicContainer);
