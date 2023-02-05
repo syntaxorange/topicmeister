@@ -6,9 +6,6 @@ export default class GetButton extends React.Component {
     this.state = {
       isShowTooltip: false
     }
-    this.handleClick = this.handleClick.bind(this);
-    this.handleMouseEnter = this.handleMouseEnter.bind(this);
-    this.handleMouseLeave = this.handleMouseLeave.bind(this);
   }
 
   handleClick() {
@@ -29,9 +26,9 @@ export default class GetButton extends React.Component {
       <button 
         id={this.props.id}
         className={`button ${this.props.class ? this.props.class : ''}`}
-        onClick={this.handleClick}
-        onMouseEnter={this.handleMouseEnter}
-        onMouseLeave={this.handleMouseLeave}
+        onClick={this.handleClick.bind(this)}
+        onMouseEnter={this.handleMouseEnter.bind(this)}
+        onMouseLeave={this.handleMouseLeave.bind(this)}
       >
         {this.props.text}
         {this.props.children}

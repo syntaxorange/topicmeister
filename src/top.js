@@ -5,7 +5,6 @@ import GetDropdown from "./components/dropdown";
 class Top extends React.Component {
   constructor(props) {
     super(props);
-    this.handleControlTopicClick = this.handleControlTopicClick.bind(this);
   }
 
   handleControlTopicClick(type) {
@@ -42,7 +41,7 @@ class Top extends React.Component {
           ref={this.props.forwardedRef}
           class="dropdown-margin"
           items={this.props.dropdownItems}
-          onClick={this.handleControlTopicClick} />
+          onClick={this.handleControlTopicClick.bind(this)} />
         <GetButton class="add" onClick={() => this.handleControlTopicClick('add')}>
           <span className="material-symbols-outlined">add</span>
         </GetButton>

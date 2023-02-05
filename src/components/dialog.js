@@ -3,8 +3,6 @@ import React from 'react';
 export default class GetDialog extends React.Component {
   constructor(props) {
     super(props);
-    this.handleDeclineClick = this.handleDeclineClick.bind(this);
-    this.handleAcceptClick = this.handleAcceptClick.bind(this);
   }
   
   handleDeclineClick() {
@@ -21,15 +19,15 @@ export default class GetDialog extends React.Component {
         <div>
           <div className="dialog-header">
             <div className="dialog-title">{this.props.title}</div>
-            <span className="dialog-close material-icons material-icons-outlined" onClick={this.handleDeclineClick}>close</span>
+            <span className="dialog-close material-icons material-icons-outlined" onClick={this.handleDeclineClick.bind(this)}>close</span>
           </div>
           <div className="dialog-content">
             {this.props.content}
           </div>
         </div>
         <div className="dialog-buttons">
-          <button className="dialog-button" onClick={this.handleDeclineClick}>Decline</button>
-          <button className="dialog-button" onClick={this.handleAcceptClick}>Accept</button>
+          <button className="dialog-button" onClick={this.handleDeclineClick.bind(this)}>Decline</button>
+          <button className="dialog-button" onClick={this.handleAcceptClick.bind(this)}>Accept</button>
         </div>
       </div>
     )

@@ -22,11 +22,6 @@ export default class Concept extends React.Component {
     }
     this.newConceptInputRef = React.createRef();
     this.dropdownRef = React.createRef();
-    this.handleTitleChange = this.handleTitleChange.bind(this);
-    this.handleContentChange = this.handleContentChange.bind(this);
-    this.handleControlConceptClick = this.handleControlConceptClick.bind(this);
-    this.handleChangeLabels = this.handleChangeLabels.bind(this);
-    this.handleToggleLabelActive = this.handleToggleLabelActive.bind(this);
   }
 
   reverseNameDropdown(index) {
@@ -109,28 +104,28 @@ export default class Concept extends React.Component {
             <div className="concept-title">{this.props.concept.title}</div>
           }
           {this.state.isChangeConcept &&
-            <GetInput ref={this.newConceptInputRef} class="new-concept-input" onChange={this.handleTitleChange} defaultValue={this.props.concept.title}/>
+            <GetInput ref={this.newConceptInputRef} class="new-concept-input" onChange={this.handleTitleChange.bind(this)} defaultValue={this.props.concept.title}/>
           }
           <div className="concept-icons">
-            <GetButton data="play" onClick={this.handleControlConceptClick}>
+            <GetButton data="play" onClick={this.handleControlConceptClick.bind(this)}>
               <span className="material-icons md-18 md-106">{this.props.concept.play ? 'stop' : 'play_circle_outline'}</span>
             </GetButton>
             <GetButton class="button-no-pointer" tooltip={this.props.concept.views}>
               <span className="material-icons md-18 md-148">remove_red_eye</span>
             </GetButton>
-            <GetDropdown ref={this.dropdownRef} items={this.state.dropdownItems} iconClass="md-18" onClick={this.handleControlConceptClick}/>
+            <GetDropdown ref={this.dropdownRef} items={this.state.dropdownItems} iconClass="md-18" onClick={this.handleControlConceptClick.bind(this)}/>
           </div>
         </div>
         {!this.state.isChangeConcept &&
           <div className="concept-content" style={{height: this.state.isShowFull ? '100%' : ''}} dangerouslySetInnerHTML={{__html: marked.parse(this.props.concept.content)}}></div>
         }
         {this.state.isChangeConcept &&
-          <GetTextarea class="new-concept-content" onChange={this.handleContentChange} defaultValue={this.props.concept.content}/>
+          <GetTextarea class="new-concept-content" onChange={this.handleContentChange.bind(this)} defaultValue={this.props.concept.content}/>
         }
         <div className="concept-footer">
           {!this.state.isChangeConcept &&
             <>
-              <GetLabel onToggleLabelActive={this.handleToggleLabelActive} defaultLabels={this.props.concept.labels} isShowDynamically={false} />
+              <GetLabel onToggleLabelActive={this.handleToggleLabelActive.bind(this)} defaultLabels={this.props.concept.labels} isShowDynamically={false} />
               <GetButton class="fullscreen" onClick={() => this.setState({isShowFull: !this.state.isShowFull})}>
                 <span className="material-icons md-141">{this.state.isShowFull ? 'fullscreen_exit' : 'fullscreen'}</span>
               </GetButton>
@@ -138,7 +133,7 @@ export default class Concept extends React.Component {
           }
           {this.state.isChangeConcept &&
             <>
-              <GetLabel onChangeLabel={this.handleChangeLabels} defaultLabels={this.props.concept.labels} isShowDynamically={true} />
+              <GetLabel onChangeLabel={this.handleChangeLabels.bind(this)} defaultLabels={this.props.concept.labels} isShowDynamically={true} />
               <GetButton class="concept-apply" onClick={() => this.handleChangeConceptClick()}>
                 <span className="material-icons md-141">edit_note</span>
               </GetButton>

@@ -7,8 +7,6 @@ export default class GetDropdown extends React.Component {
     this.state = {
       isActive: false
     };
-    this.handleClick = this.handleClick.bind(this);
-    this.handleItemClick = this.handleItemClick.bind(this);
   }
   
   componentDidMount() {
@@ -45,7 +43,7 @@ export default class GetDropdown extends React.Component {
                    class="button-dropdown" 
                    text={item.name} 
                    data={item.type} 
-                   onClick={this.handleItemClick}/>
+                   onClick={this.handleItemClick.bind(this)}/>
         })}
       </div>
     );
@@ -54,7 +52,7 @@ export default class GetDropdown extends React.Component {
   render() {
     return (
       <div className={`dropdown ${this.props.class || ''}`}>
-        <GetButton onClick={this.handleClick}>
+        <GetButton onClick={this.handleClick.bind(this)}>
           <span className={`material-icons md-106 ${this.props.iconClass || ''}`}>more_vert</span>
         </GetButton>
         {this.renderItems()}
