@@ -7,6 +7,9 @@
     "default_popup": "index.html",
     "default_icon": "logo192.png"
   },
+  "background": {
+    "service_worker": "static/js/background.js"
+  },
   "content_scripts": [
     {
       "js": ["static/js/content.js"],
@@ -14,7 +17,6 @@
     }
   ],
   "permissions": [
-    "activeTab",
     "storage"
   ],
   "host_permissions": [

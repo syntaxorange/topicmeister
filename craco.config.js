@@ -10,7 +10,7 @@ module.exports = {
       );
 
       if (htmlWebpackPluginInstance) {
-        htmlWebpackPluginInstance.userOptions.excludeChunks = ["content"];
+        htmlWebpackPluginInstance.userOptions.excludeChunks = ["content", "background"];
       }
       
       return {
@@ -19,6 +19,7 @@ module.exports = {
           main: [env === 'development' &&
             require.resolve('react-dev-utils/webpackHotDevClient'), paths.appIndexJs].filter(Boolean),
           content: './src/chrome/content.js',
+          background: './src/chrome/background.js'
         },
         output: {
           ...webpackConfig.output,

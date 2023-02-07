@@ -168,13 +168,15 @@ class App extends React.Component {
     }
   }
 
-  sendChromeMessage({ id, play, topicId, currentConcept, topics, change, remove }) {
+  async sendChromeMessage({ id, play, topicId, currentConcept, topics, change, remove }) {
     /* eslint-disable */
-    chrome.tabs && chrome.tabs.query({
-      active: true,
-      currentWindow: true
-    }, tabs => {
-      const currentTabId = tabs[0].id;
+    if (!chrome.tabs)
+      return;
+    
+    const tabs = await chrome.tabs.query({});
+
+    for (let i = 0; i < tabs.length; ++i) {
+      const currentTabId = tabs[i].id;
 
       chrome.tabs.sendMessage(
         currentTabId,
@@ -182,13 +184,18 @@ class App extends React.Component {
         data => {
           if (!data)
             return
+
           const { playing, someId, someTopicId, startTime, someStartTime } = data;
+
           if (playing === undefined || remove)
             return;
+
           if (playing)
             currentConcept.views += 1;
+
           currentConcept.playing = playing;
           currentConcept.startTime = startTime;
+          
           if (someId) {
             const currentTopic = this.getTopicById(topics, someTopicId);
             const someConceptPlay = this.getConceptById(currentTopic, someId);
@@ -198,7 +205,7 @@ class App extends React.Component {
           this.setState({ topics });
         }
       );
-    });
+    }
     /* eslint-enable */
   }
 
