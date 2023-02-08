@@ -5,7 +5,7 @@ class Background {
   constructor() {
     this.storageKey = 'topic_meister_topics';
     this.timerId = 0;
-    this.playTime = 10000;
+    this.playTime = 30000;
     this.playTimeout = this.playTime;
   }
 
@@ -19,7 +19,7 @@ class Background {
   
       for (let i = 0; i < tabs.length; ++i) {
         const currentTabId = tabs[i].id;
-        const message = { isSwitchConcept: true, topics };
+        const message = { isSwitch: true, topics: topics[this.storageKey] };
   
         chrome.tabs.sendMessage(currentTabId, message, data => {});
       }
@@ -35,35 +35,53 @@ class Background {
 
   init() {
     chrome.runtime.onMessage.addListener(async request => {
-      const { isLoaded, isSwitchConcept, restartTimer, stopTimer, topics } = request;
+      const { isLoaded, isSwitch, isRunTimer, isStopTimer, topics, concept } = request;
     
       if (!chrome.tabs && !request)
         return;
 
-      if (isLoaded || isSwitchConcept) {
+      if (isLoaded || isSwitch) {
         const tabs = await chrome.tabs.query({});
     
         for (let i = 0; i < tabs.length; ++i) {
-          const currentTabId = tabs[i].id;
+          const tab = tabs[i];
+
+          if (!tab.url)
+            continue;
+
+          const currentTabId = tab.id;
           let message = null;
 
-          if (isLoaded)
-            message = { id: request.id, topicId: request.topicId, topics: request.topics, isLoaded };
+          if (isLoaded) {
+            message = { 
+              id: request.id, 
+              topicId: request.topicId, 
+              topics: request.topics, 
+              isLoaded 
+            }
+          }
 
-          if (isSwitchConcept) {
+          if (isSwitch) {
             this.stopTimer();
-            message = { isSwitchConcept, topics };
+            message = { isSwitch, topics };
           }
     
           chrome.tabs.sendMessage(currentTabId, message, () => {});
         }
     
+        if (isLoaded) {
+          const timeLeft = (new Date).getTime() - concept.startTime;
+          this.playTimeout = timeLeft > this.playTime ? 0 : this.playTime - timeLeft;
+        }
+
         if (!this.timerId)
           this.runTimer();
-      } else if (restartTimer) {
-        this.stopTimer();
+
+        this.playTimeout = this.playTime;
+      } else if (isRunTimer) {
+        this.stopTimer()
         this.runTimer();
-      } else if (stopTimer) {
+      } else if (isStopTimer) {
         this.stopTimer();
       }
     });

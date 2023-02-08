@@ -16,6 +16,10 @@ export default class Box {
     }
   }
   
+  getBox() {
+    return document.getElementById('topic_meister_topic');
+  }
+
   getBoxPosition(boxOffset, e) {
     const { clientX: x, clientY: y } = e;
     const { x: boxOffsetX, y: boxOffsetY } = boxOffset;
@@ -164,13 +168,17 @@ export default class Box {
   }
 
   putToChangedPlace(box) {
-    storage.get(this.storageKeyCoor).then(result => {
-      const coor = result[this.storageKeyCoor];
-  
-      if (coor && coor.x && coor.y) {
-        box.style.left = coor.x;
-        box.style.top = coor.y;
-      }
+    return new Promise(resolve => {
+      storage.get(this.storageKeyCoor).then(result => {
+        const coor = result[this.storageKeyCoor];
+    
+        if (coor && coor.x && coor.y) {
+          box.style.left = coor.x;
+          box.style.top = coor.y;
+        }
+
+        resolve();
+      });
     });
   }
 
@@ -184,22 +192,22 @@ export default class Box {
     box.style.left = '';
     
     if (this.toggle) {
-      chrome.runtime.sendMessage({ stopTimer: true });
+      chrome.runtime.sendMessage({ isStopTimer: true });
     } else {
       storage.remove(this.storageKeyToogle);
       this.putToChangedPlace(box);
-      chrome.runtime.sendMessage({ restartTimer: true });
+      chrome.runtime.sendMessage({ isRunTimer: true });
     }
   }
 
   removeBox() {
-    const existingTopic = document.getElementById('topic_meister_topic');
+    const existingBox = this.getBox();
 
-    if (existingTopic)
-      existingTopic.remove();
+    if (existingBox)
+      existingBox.remove();
   }
 
-  addBox({title, content}) {
+  async addBox({ title, content }) {
     this.removeBox();
     const body = document.querySelector('body');
     const box = this.getStyledBox();
@@ -224,9 +232,16 @@ export default class Box {
     boxControls.appendChild(boxToggle);
     boxControls.appendChild(boxSwitch);
     box.appendChild(boxControls);
-    this.putToChangedPlace(box);
-    body.appendChild(box);
-    this.bindTopicEvents({box, boxControls, boxContainer, boxToggle, boxSwitch});
+    await this.putToChangedPlace(box);
+    storage.get(this.storageKeyToogle).then(data => {
+      this.toggle = data[this.storageKeyToogle];
+
+      if (this.toggle)
+        this.toggleBox({ box, boxContainer, boxToggle, boxSwitch });
+
+      body.appendChild(box);
+      this.bindTopicEvents({box, boxControls, boxContainer, boxToggle, boxSwitch});
+    });
   }
 
   bindTopicEvents({ box, boxControls, boxContainer, boxToggle, boxSwitch }) {
@@ -263,7 +278,7 @@ export default class Box {
 
     boxSwitch.addEventListener('click', () => {
       storage.get(this.storageKey).then(topics => {
-        chrome.runtime.sendMessage({ isSwitchConcept: true, topics });
+        chrome.runtime.sendMessage({ isSwitch: true, topics: topics[this.storageKey] });
       });
     });
 

@@ -168,7 +168,7 @@ class App extends React.Component {
     }
   }
 
-  async sendChromeMessage({ id, play, topicId, currentConcept, topics, change, remove }) {
+  async sendChromeMessage({ id, play, topicId, currentConcept, topics, isChange, isRemove }) {
     /* eslint-disable */
     if (!chrome.tabs)
       return;
@@ -176,25 +176,32 @@ class App extends React.Component {
     const tabs = await chrome.tabs.query({});
 
     for (let i = 0; i < tabs.length; ++i) {
+      const tab = tabs[i];
+
+      if (!tab.url)
+        continue;
+        
       const currentTabId = tabs[i].id;
 
       chrome.tabs.sendMessage(
         currentTabId,
-        { id, play, topicId, topics, change, remove },
+        { id, play, topicId, topics, isChange, isRemove },
         data => {
           if (!data)
             return
 
           const { playing, someId, someTopicId, startTime, someStartTime } = data;
 
-          if (playing === undefined || remove)
+          if (playing === undefined)
             return;
 
-          if (playing)
-            currentConcept.views += 1;
-
-          currentConcept.playing = playing;
-          currentConcept.startTime = startTime;
+          if (!isRemove) {
+            if (playing)
+              currentConcept.views += 1;
+          
+            currentConcept.playing = playing;
+            currentConcept.startTime = startTime;
+          }
           
           if (someId) {
             const currentTopic = this.getTopicById(topics, someTopicId);
@@ -284,7 +291,7 @@ class App extends React.Component {
       return;
 
     const { id, topicId } = changedConcept;
-    this.sendChromeMessage({ id, topicId, topics, change: true });
+    this.sendChromeMessage({ id, topicId, topics, isChange: true });
   }
 
   openTopicClick(id) {
@@ -479,19 +486,18 @@ class App extends React.Component {
       topics
     });
 
-    if (playing) {
-      const { id, topicId } = playing;
-      
-      this.sendChromeMessage({ id, topicId, topics, remove: true });
-    } else {
+    if (playing)
+      this.sendChromeMessage({ topics, isRemove: true });
+    else
       storage.set(this.storageKey, topics);
-    }
   }
 
   removeConcept() {
     const topics = structuredClone(this.state.topics);
     const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
     const index = currentTopic.concepts.findIndex(o => o.id === this.state.removeConceptId);
+    const { playing } = currentTopic.concepts[index];
+
     currentTopic.concepts.splice(index, 1);
 
     if (this.state.isFilterDesc)
@@ -506,7 +512,10 @@ class App extends React.Component {
       topics
     });
 
-    this.sendChromeMessage({ id: this.state.removeConceptId, topics, remove: true });
+    if (playing)
+      this.sendChromeMessage({ topics, isRemove: true });
+    else
+      storage.set(this.storageKey, topics);
   }
   
   handleDialogClick(type) {

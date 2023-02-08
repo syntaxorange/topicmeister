@@ -29,27 +29,21 @@ export default class Content extends Box {
       this.addBox({title: concept.title, content: concept.content});
   }
 
-  stopConcept(topics, concept) {
-    if (concept) {
-      concept.playing = false;
-      concept.startTime = null;
-    }
-    storage.set(this.storageKey, topics[this.storageKey]);
-    document.getElementById('topic_meister_topic').remove();
-  }
-
-  switchConcept(topics) {
+  switch(topics) {
     if (!Object.keys(topics).length) {
       clearTimeout(timerId);
       return;
     }
-    const concepts = this.getConcepts(topics);
+
+    const concepts = this.getConcepts({ 'topic_meister_topics' : topics });
     
     if (!concepts.length) {
       clearTimeout(timerId);
       return;
     }
+
     let index = this.getPlayingConceptIndex(concepts);
+
     if (index === concepts.length - 1) {
       const concept = concepts[index];
       concept.playing = false;
@@ -62,124 +56,137 @@ export default class Content extends Box {
       index += 1;
     }
     
-    const concept = concepts[index];
-    // playTimeout = playTime;
-    this.playConcept(topics, concept, { isUpdateCounter: true, isStorage: true, startTime: (new Date()).getTime(), isAddTopic: true });
+    this.play(concepts, topics, concepts[index]);
+  }
+
+  toggleConceptPlayingProps(concept, startTime = null, playing = true, views = 1) {
+    if (views)
+      concept.views += views;
+    concept.playing = playing;
+    concept.startTime = startTime;
+  }
+
+  play(concepts, topics, concept, sendResponse) {
+    if (!concepts.some(o => o.playing)) {
+      const startTime = (new Date).getTime();
+      this.toggleConceptPlayingProps(concept, startTime);
+      this.addBox({ title: concept.title, content: concept.content });
+      if (!this.toggle)
+        chrome.runtime.sendMessage({ isRunTimer: true });
+      storage.set(this.storageKey, topics);
+      if (sendResponse)
+        sendResponse({ playing: true, startTime });
+    } else {
+      storage.set(this.storageKey, topics);
+      sendResponse();
+    }
+  }
+
+  stop(allConcepts, concept, topics, remove, sendResponse) {
+    if (!remove)
+      this.toggleConceptPlayingProps(concept, null, false, 0);
+
+    storage.set(this.storageKey, topics);
+    this.removeBox();
+
+    const hasSomeConceptPlay = allConcepts.some(o => o.play);
+        
+    if (hasSomeConceptPlay) {
+      const startTime = (new Date).getTime();
+      const someConcept = allConcepts.find(o => o.play);
+
+      this.play(allConcepts, topics, someConcept);
+      
+      sendResponse({ 
+        playing: false, 
+        startTime: null, 
+        someId: someConcept.id, 
+        someTopicId: someConcept.topicId, 
+        someStartTime: startTime 
+      });
+    } else {
+      sendResponse({ playing: false, startTime: null });
+    }
+  }
+
+  onMessage() {
+    chrome.runtime.onMessage.addListener((data, sender, sendResponse) => {
+      if (sender.id !== chrome.runtime.id)
+        return;
+
+      const { id, play, topicId, topics, isLoaded, isSwitch, isChange, isRemove } = data;
+      const allConcepts = this.getConcepts({ 'topic_meister_topics' : topics }, true);
+      const currentConcept = id && allConcepts.find(o => o.topicId === topicId && o.id === id);
+      
+      if (isLoaded) {
+        this.addBox({title: currentConcept.title, content: currentConcept.content});
+        sendResponse();
+      }
+
+      if (isSwitch) {
+        this.switch(topics);
+        sendResponse();
+      }
+
+      if (isChange) {
+        if (currentConcept.playing) {
+          this.addBox({ title: currentConcept.title, content: currentConcept.content });
+          storage.set(this.storageKey, topics);
+          chrome.runtime.sendMessage({ isRunTimer: true });
+        } else {
+          storage.set(this.storageKey, topics);
+        }
+        sendResponse();
+      }
+
+      if (isRemove)
+        this.stop(allConcepts, currentConcept, topics, isRemove, sendResponse);
+  
+      if (play === undefined)
+        return;
+
+      if (play) {
+        this.play(allConcepts, topics, currentConcept, sendResponse);
+      } else {
+        if (currentConcept?.playing) {
+          this.stop(allConcepts, currentConcept, topics, false, sendResponse);
+        } else {
+          storage.set(this.storageKey, topics);
+          sendResponse();
+        }
+      }
+    });
   }
 
   init() {
     storage.get(this.storageKey).then(topics => {
       if (!Object.keys(topics).length)
         return;
+
       const concepts = this.getConcepts(topics);
      
       if (!concepts.length)
         return;
+
       const index = this.getPlayingConceptIndex(concepts);
   
       if (index < 0)
         return;
   
       const concept = concepts[index];
-      chrome.runtime.sendMessage({ isLoaded: true, id: concept.id, topicId: concept.topicId, topics: topics[this.storageKey] });
-  
-      // this.playConcept(topics, concepts[index], { isUpdateCounter: false, isStorage: false });
-      // const topic = document.getElementById('topic_meister_topic');
-  
-      // storage.get(storageKeyToogle).then(result => {
-      //   if (result[storageKeyToogle] === undefined)
-      //     return;
-  
-      //   this.toggle = result[storageKeyToogle];
-      //   this.toggleTopic({ 
-      //     topic, 
-      //     topicContainer: topic.firstElementChild, 
-      //     topicToggle: topic.lastElementChild.firstElementChild, 
-      //     topicSwitch: topic.lastElementChild.lastElementChild
-      //    });
-      // });
-      
-      // const timeLeft = (new Date).getTime() - concepts[index].startTime;
-      // playTimeout = timeLeft > playTime ? 0 : playTime - timeLeft;
-      // console.log('%c%s', 'color: #1995d7', playTimeout * 0.001 / 60);
-      // runTimer();
+
+      chrome.runtime.sendMessage({ 
+        isLoaded: true, 
+        id: concept.id, 
+        topicId: concept.topicId,
+        topics: topics[this.storageKey], 
+        concept
+      });
     });
     
-    chrome.runtime.onMessage.addListener((data, sender, sendResponse) => {
-      if (sender.id !== chrome.runtime.id)
-        return;
-      const { id, play, isLoaded, isSwitchConcept, topicId, topics, change, remove } = data;
-  
-      if (isSwitchConcept) {
-        this.switchConcept(topics);
-        sendResponse();
-        return;
-      }
-  
-      const topicsWithStorageKey = { 'topic_meister_topics' : topics };
-      const allConcepts = this.getConcepts(topicsWithStorageKey, true);
-      const currentConcept = allConcepts.find(o => o.topicId === topicId && o.id === id);
-      const startTime = (new Date).getTime();
-      
-      if (isLoaded) {
-        this.addBox({title: currentConcept.title, content: currentConcept.content});
-        sendResponse();
-        return;
-      }
-  
-      if (change) {
-        if (currentConcept.playing) {
-          this.playConcept(topicsWithStorageKey, currentConcept, { isUpdateCounter: false, isStorage: true, isAddTopic: true });
-          clearTimeout(timerId);
-          chrome.runtime.sendMessage({ restartTimer: true });
-        } else {
-          storage.set(this.storageKey, topics);
-        }
-  
-        return;
-      }
-  
-      if (play) {
-        if (!allConcepts.some(o => o.playing)) {
-          this.playConcept(topicsWithStorageKey, currentConcept, { isUpdateCounter: true, isStorage: true, startTime, isAddTopic: true });
-          sendResponse({ playing: true, startTime });
-          chrome.runtime.sendMessage({ restartTimer: true });
-        } else {
-          storage.set(this.storageKey, topics);
-          sendResponse();
-        }
-      }
-  
-      if (!play && currentConcept?.playing) {
-        this.stopConcept(topicsWithStorageKey, !remove && currentConcept);
-        const isSomeConceptPlay = allConcepts.some(o => o.play);
-        
-        if (isSomeConceptPlay) {
-          const someConceptPlay = allConcepts.find(o => o.play);
-  
-          this.playConcept(topicsWithStorageKey, someConceptPlay, { isUpdateCounter: true, isStorage: true, startTime, isAddTopic: true });
-          sendResponse({ playing: false, startTime: null, someId: someConceptPlay.id, someTopicId: someConceptPlay.topicId, someStartTime: startTime });
-          const topic = document.getElementById('topic_meister_topic');
-          if (this.toggle) {
-            this.toggleTopic({ 
-              topic, 
-              topicContainer: topic.firstElementChild, 
-              topicToggle: topic.lastElementChild.firstElementChild, 
-              topicSwitch: topic.lastElementChild.lastElementChild
-             });
-          } else {
-            clearTimeout(timerId);
-            chrome.runtime.sendMessage({ restartTimer: true });
-          }
-        } else {
-          sendResponse({ playing: false, startTime: null });
-        }
-      } else {
-        storage.set(this.storageKey, topics);
-        sendResponse();
-      }
-    });
+    this.onMessage();
   }
 }
+
 new Content().init();
 /* eslint-enable */
