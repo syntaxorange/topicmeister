@@ -1,10 +1,10 @@
 import React from "react";
 import { marked } from "marked";
-import GetButton from "./components/button";
-import GetDropdown from "./components/dropdown";
-import GetInput from "./components/input";
-import GetLabel from "./components/label";
-import GetTextarea from "./components/textarea";
+import GetButton from "../components/button";
+import GetDropdown from "../components/dropdown";
+import GetInput from "../components/input";
+import GetLabel from "../components/label";
+import GetTextarea from "../components/textarea";
 
 export default class Concept extends React.Component {
   constructor(props) {

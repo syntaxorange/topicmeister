@@ -1,5 +1,5 @@
 import React from "react";
-import GetButton from "./components/button";
+import GetButton from "../components/button";
 
 export default class Title extends React.Component {
   render() {

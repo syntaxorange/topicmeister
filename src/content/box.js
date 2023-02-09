@@ -1,5 +1,5 @@
 /* eslint-disable */
-import storage from "../storage";
+import storage from "../ext/storage";
 import { marked } from 'marked';
 
 export default class Box {

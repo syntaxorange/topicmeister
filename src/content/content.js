@@ -1,4 +1,4 @@
-import storage from "../storage";
+import storage from "../ext/storage";
 import Box from "./box";
 
 /* eslint-disable */

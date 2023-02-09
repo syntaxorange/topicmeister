@@ -1,8 +1,8 @@
 import React from "react";
-import GetButton from "./components/button";
-import GetInput from "./components/input";
-import GetLabel from "./components/label";
-import GetTextarea from "./components/textarea";
+import GetButton from "../components/button";
+import GetInput from "../components/input";
+import GetLabel from "../components/label";
+import GetTextarea from "../components/textarea";
 
 export default class NewConcept extends React.Component {
   constructor(props) {

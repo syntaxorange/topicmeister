@@ -1,6 +1,6 @@
 import React from "react";
-import GetButton from "./components/button";
-import GetDropdown from "./components/dropdown";
+import GetButton from "../components/button";
+import GetDropdown from "../components/dropdown";
 
 class Top extends React.Component {
   constructor(props) {

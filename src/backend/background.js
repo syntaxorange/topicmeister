@@ -1,5 +1,5 @@
 /* eslint-disable */
-import storage from "../storage";
+import storage from "../ext/storage";
 
 class Background {
   constructor() {
