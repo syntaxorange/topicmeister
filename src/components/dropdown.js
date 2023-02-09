@@ -1,5 +1,6 @@
 import React from "react";
 import GetButton from "./button";
+import './dropdown.css';
 
 export default class GetDropdown extends React.Component {
   constructor(props) {

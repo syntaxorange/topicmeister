@@ -1,6 +1,7 @@
 import React from "react";
 import GetButton from "./button";
 import GetInput from "./input";
+import './label.css';
 
 export default class GetLabel extends React.Component {
   constructor(props) {

@@ -1,4 +1,5 @@
 import React from 'react';
+import './dialog.css';
 
 export default class GetDialog extends React.Component {
   constructor(props) {

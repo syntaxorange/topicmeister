@@ -1,0 +1,41 @@
+.labels {
+  display: flex;
+  align-items: center;
+  flex-flow: wrap;
+}
+
+.label {
+  font-family: 'Roboto', sans-serif;
+  font-size: 11px;
+  margin: 1px;
+  padding: 3px;
+  color: #ffffff;
+  border-radius: 3px;
+  background-color: #8b7edf;
+}
+
+.label-active {
+  background-color: #7669cb;
+}
+
+.label:last-child {
+  margin-right: 0;
+}
+
+.label-add {
+  margin-right: 3px;
+}
+
+.label-text {
+  margin-right: 5px;
+}
+
+.label-input {
+  font-family: 'Roboto', sans-serif;
+  font-size: 11px;
+  width: 30px;
+  margin-right: 2px;
+  padding: 0;
+  outline: 0;
+  border: 0;
+}

@@ -1,0 +1,56 @@
+.button-arrow {
+  margin-right: 4px;
+}
+
+.button {
+  position: relative;
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  background-color: transparent;
+}
+
+.button-no-pointer {
+  cursor: default;
+}
+
+.add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
+  color: #ffffff;
+  border-radius: 100%;
+  background-color: #8b7edf;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.add > span {
+  font-size: 20px;
+}
+
+.add-concept {
+  top: 2px;
+  color: #8b7edf;
+}
+
+.new-concept-add {
+  color: #585858;
+}
+
+.tooltip {
+  font-size: 10px;
+  position: absolute;
+  z-index: 1;  
+  top: 18px;
+  left: -4px;
+  display: none;
+  padding: 7px;
+  color: #ffffff;
+  border-radius: 2px;
+  background-color: #616161;
+}
