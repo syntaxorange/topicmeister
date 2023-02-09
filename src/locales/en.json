@@ -1,0 +1,42 @@
+{
+  "en": {
+    "topic": {
+      "title": "Remove topic",
+      "content": "You really want to delete the topic \"%{name}\"?",
+      "dropdown": {
+        "add": {
+          "name": "Add topic",
+          "tmp": "Cancel add"
+        },
+        "change": {
+          "name": "Change topic",
+          "tmp": "Cancel change"
+        },
+        "remove": {
+          "name": "Remove topic",
+          "tmp": "Cancel remove"
+        }
+      }
+    },
+    "concept": {
+      "title": "Remove concept",
+      "content": "You really want to delete the concept \"%{name}\"?",
+      "dropdown": {
+        "change": {
+          "name": "Change concept",
+          "tmp": "Cancel change"
+        },
+        "remove": {
+          "name": "Remove concept",
+          "tmp": "Cancel remove"
+        }
+      }
+    },
+    "buttons": {
+      "dialog": {
+        "decline": "Decline",
+        "accept": "Accept"
+      }
+    }
+  }
+}

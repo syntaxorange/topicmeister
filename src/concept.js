@@ -16,12 +16,18 @@ export default class Concept extends React.Component {
       content: '',
       labels: [],
       dropdownItems: [
-        { name: 'Change concept', tmp: 'Cancel change', type: 'change' }, 
-        { name: 'Remove concept', tmp: 'Cancel remove', type: 'remove' }
+        { type: 'change' }, 
+        { type: 'remove' }
       ]
     }
     this.newConceptInputRef = React.createRef();
     this.dropdownRef = React.createRef();
+    this.t = null;
+  }
+
+  componentDidMount() {
+    this.t = this.props.t;
+    this.props.setDropdownItems.call(this, 'concept');
   }
 
   reverseNameDropdown(index) {

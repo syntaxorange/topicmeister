@@ -26,8 +26,8 @@ export default class GetDialog extends React.Component {
           </div>
         </div>
         <div className="dialog-buttons">
-          <button className="dialog-button" onClick={this.handleDeclineClick.bind(this)}>Decline</button>
-          <button className="dialog-button" onClick={this.handleAcceptClick.bind(this)}>Accept</button>
+          <button className="dialog-button" onClick={this.handleDeclineClick.bind(this)}>{this.props.decline}</button>
+          <button className="dialog-button" onClick={this.handleAcceptClick.bind(this)}>{this.props.accept}</button>
         </div>
       </div>
     )

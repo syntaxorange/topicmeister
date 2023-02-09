@@ -5,7 +5,7 @@ class Background {
   constructor() {
     this.storageKey = 'topic_meister_topics';
     this.timerId = 0;
-    this.playTime = 30000;
+    this.playTime = 10 * 60 * 1000;
     this.playTimeout = this.playTime;
   }
 

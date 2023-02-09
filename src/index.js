@@ -9,6 +9,9 @@ import Top from "./top";
 import Title from "./title";
 import storage from "./storage";
 import './style.css';
+import { I18n } from "i18n-js";
+import en from "./locales/en.json";
+import ru from "./locales/ru.json";
 
 class App extends React.Component {
   constructor(props) {
@@ -29,9 +32,9 @@ class App extends React.Component {
       topics: [],
       conceptsTmp: [],
       dropdownItems: [
-        { name: 'Add topic', tmp: 'Cancel add', type: 'add' },
-        { name: 'Change topic', tmp: 'Cancel change', type: 'change' },
-        { name: 'Remove topic', tmp: 'Cancel remove', type: 'remove' }
+        { type: 'add' },
+        { type: 'change' },
+        { type: 'remove' }
       ]
     }
     this.storageKey = 'topic_meister_topics';
@@ -40,6 +43,7 @@ class App extends React.Component {
     this.newConceptRef = React.createRef();
     this.topicsRef = new WeakMap;
     this.conceptsRef = new WeakMap;
+    this.t = null;
   }
 
   componentDidMount() {
@@ -56,6 +60,10 @@ class App extends React.Component {
         topics.forEach(o => o.change = false);
       }
 
+      const i18n = new I18n({ ...en, ...ru });
+      i18n.locale = navigator.language === 'ru' ? 'ru' : 'en';
+      this.t = i18n.t.bind(i18n);
+      this.setDropdownItems('topic');
       this.setState({ topics });
     });
   }
@@ -65,7 +73,7 @@ class App extends React.Component {
   }
 
   getConceptById(topic, id) {
-    return topic.concepts.find(o => o.id == id);
+    return topic.concepts.find(o => o.id === id);
   }
 
   setTopicRef = o => ref => {
@@ -74,6 +82,14 @@ class App extends React.Component {
 
   setConceptRef = o => ref => {
     this.conceptsRef.set(o, ref);
+  }
+
+  setDropdownItems(category) {
+    const dropdownItems = this.state.dropdownItems.map(o => {
+      return {...o, ...this.t(`${category}.dropdown.${o.type}`)};
+    });
+    
+    this.setState({ dropdownItems });
   }
 
   setRemoveTopicId(id) {
@@ -139,7 +155,9 @@ class App extends React.Component {
               ref={this.setConceptRef(concept)}
               key={concept.id}
               id={concept.id}
+              t={this.t}
               concept={concept} 
+              setDropdownItems={this.setDropdownItems}
               onToggleLabelActive={data => this.changeConceptData(data, false, true)}
               onChangeConceptApply={data => this.changeConceptData(data)}
               onClickConceptPlay={this.playConcept.bind(this)}
@@ -152,18 +170,25 @@ class App extends React.Component {
       return;
 
     if (!this.state.isOpenConcepts) {
+      const currentTopic = this.getTopicById(this.state.topics, this.state.removeTopicId);
       return (
-        <GetDialog 
-          title="Remove topic" 
-          content="You really want to delete the topic?" 
+        <GetDialog
+          decline={this.t("buttons.dialog.decline")}
+          accept={this.t("buttons.dialog.accept")}
+          title={this.t("topic.title")} 
+          content={this.t("topic.content", { name: currentTopic.name })} 
           onClick={this.handleDialogClick.bind(this)} />
       );
     } else {
+      const currentTopic = this.getTopicById(this.state.topics, this.state.currentTopicId);
+      const currentConcept = this.getConceptById(currentTopic, this.state.removeConceptId);
       return (
         <GetDialog 
-          title="Remove concept" 
-          content="You really want to delete the concept?" 
-          onClick={this.handleDialogClick.bind(this)} />
+          decline={this.t("buttons.dialog.decline")}
+          accept={this.t("buttons.dialog.accept")}
+          title={this.t("concept.title")} 
+          content={this.t("concept.content", { name: currentConcept.title })} 
+          onClick={type => this.handleDialogClick(type, currentConcept)} />
       );
     }
   }
@@ -219,7 +244,7 @@ class App extends React.Component {
   playConcept(id) {
     const topics = structuredClone(this.state.topics);
     const currentTopic = this.getTopicById(topics, this.state.currentTopicId);
-    const currentConcept = currentTopic.concepts.find(o => o.id === id);
+    const currentConcept = this.getConceptById(currentTopic, id);
     currentConcept.play = !currentConcept.play;
 
     this.setState({
@@ -518,15 +543,12 @@ class App extends React.Component {
       storage.set(this.storageKey, topics);
   }
   
-  handleDialogClick(type) {
+  handleDialogClick(type, concept) {
     switch (type) {
       case 'decline':
         this.setState({ isShowDialog: false }, () => {
-          if (this.state.removeConceptId > 0) {
-            const currentTopic = this.getTopicById(this.state.topics, this.state.currentTopicId);
-            const currentConcept = this.getConceptById(currentTopic, this.state.removeConceptId);
-            this.conceptsRef.get(currentConcept)?.reverseNameDropdown(1);
-          }
+          if (this.state.removeConceptId > 0)
+            this.conceptsRef.get(concept)?.reverseNameDropdown(1);
         });
         break;
       case 'accept':
